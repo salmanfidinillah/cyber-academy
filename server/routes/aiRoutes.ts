@@ -1,0 +1,412 @@
+import { Router, Response } from "express";
+import { Type } from "@google/genai";
+import { z } from "zod";
+import { authenticateUser } from "../middleware/auth";
+import { AuthenticatedRequest } from "../types";
+import { AiConfigState } from "../config/aiConfig";
+import { AiProvider, AiServiceError, generateWithRetry } from "../services/aiProvider";
+import { detectHarmfulRequest, detectPromptInjection, sanitizeAiInput } from "../services/aiSafety";
+import {
+  learningInsightSchema,
+  parseStructuredOutput,
+  tutorResponseSchema,
+} from "../services/aiStructuredOutput";
+import { INSIGHT_SYSTEM_PROMPT, MASTER_SYSTEM_PROMPT } from "../services/aiPrompts";
+import { listMessages } from "../services/aiHistoryService";
+
+const FRIENDLY_UNAVAILABLE =
+  "AI Tutor sedang sibuk atau sementara tidak tersedia. Materi, kuis, dan simulasi tetap dapat digunakan. Silakan coba kembali beberapa saat lagi.";
+
+type MessageLoader = typeof listMessages;
+
+interface AiRouteDependencies {
+  configState: AiConfigState;
+  provider: AiProvider | null;
+  messageLoader?: MessageLoader;
+  quota?: UserAiQuota;
+  deduplicator?: AiRequestDeduplicator;
+}
+
+interface UserUsage {
+  count: number;
+  date: string;
+  lastRequestTime: number;
+}
+
+export class UserAiQuota {
+  private readonly usage = new Map<string, UserUsage>();
+
+  consume(uid: string, bucket: "tutor" | "insight", maxPerDay: number, minimumIntervalMs: number): void {
+    const key = `${uid}:${bucket}`;
+    const now = Date.now();
+    const today = new Date(now).toISOString().slice(0, 10);
+    const current = this.usage.get(key) || { count: 0, date: today, lastRequestTime: 0 };
+    if (current.date !== today) {
+      current.count = 0;
+      current.date = today;
+      current.lastRequestTime = 0;
+    }
+    if (now - current.lastRequestTime < minimumIntervalMs) {
+      throw new AiServiceError(
+        "Mohon tunggu beberapa detik sebelum mengirim permintaan AI kembali.",
+        "AI_RATE_LIMITED",
+        429,
+        false
+      );
+    }
+    if (current.count >= maxPerDay) {
+      throw new AiServiceError(
+        "Batas penggunaan AI hari ini telah tercapai. Kamu tetap dapat menggunakan materi, kuis, dan simulasi.",
+        "AI_DAILY_LIMIT_REACHED",
+        429,
+        false
+      );
+    }
+    current.count += 1;
+    current.lastRequestTime = now;
+    this.usage.set(key, current);
+  }
+}
+
+export class AiRequestDeduplicator {
+  private readonly requests = new Map<string, { promise: Promise<unknown>; expiresAt: number }>();
+
+  run<T>(key: string | undefined, operation: () => Promise<T>): Promise<T> {
+    if (!key) return operation();
+    const now = Date.now();
+    const existing = this.requests.get(key);
+    if (existing && existing.expiresAt > now) return existing.promise as Promise<T>;
+
+    const promise = operation();
+    this.requests.set(key, { promise, expiresAt: now + 60_000 });
+    promise.catch(() => {
+      if (this.requests.get(key)?.promise === promise) this.requests.delete(key);
+    });
+    return promise;
+  }
+}
+
+const requestIdSchema = z.string().uuid().optional();
+const conversationIdSchema = z.string().trim().regex(/^[A-Za-z0-9_-]{1,128}$/).optional();
+const historyItemSchema = z.object({
+  role: z.enum(["user", "assistant"]),
+  content: z.string().max(4_000),
+});
+
+const tutorRequestSchema = z
+  .object({
+    message: z.string().trim().min(1).max(20_000),
+    contextType: z.enum(["general", "lesson", "remedial", "simulation"]).optional(),
+    learningPathTitle: z.string().max(500).optional(),
+    courseTitle: z.string().max(500).optional(),
+    lessonTitle: z.string().max(500).optional(),
+    lessonSummary: z.string().max(20_000).optional(),
+    quizIncorrectTopics: z.array(z.string().max(1_000)).max(20).optional(),
+    simulationDetails: z.unknown().optional(),
+    history: z.array(historyItemSchema).max(50).optional(),
+    conversationId: conversationIdSchema,
+    requestId: requestIdSchema,
+  })
+  .strict();
+
+const insightRequestSchema = z
+  .object({
+    completedLessonsCount: z.number().int().min(0).max(10_000),
+    quizScores: z.array(z.unknown()).max(100).optional().default([]),
+    simulationResults: z.array(z.unknown()).max(100).optional().default([]),
+    overallProgress: z.number().min(0).max(100),
+    requestId: requestIdSchema,
+  })
+  .strict();
+
+const tutorResponseJsonSchema = {
+  type: Type.OBJECT,
+  properties: {
+    answer: { type: Type.STRING },
+    summary: { type: Type.STRING },
+    suggestedQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
+    safetyStatus: {
+      type: Type.STRING,
+      enum: ["safe", "caution", "blocked_and_redirected", "insufficient_context"],
+    },
+    requiresOfficialHelp: { type: Type.BOOLEAN },
+  },
+  required: ["answer", "summary", "suggestedQuestions", "safetyStatus", "requiresOfficialHelp"],
+};
+
+const insightResponseJsonSchema = {
+  type: Type.OBJECT,
+  properties: {
+    summary: { type: Type.STRING },
+    strongTopics: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: { topic: { type: Type.STRING }, reason: { type: Type.STRING } },
+        required: ["topic", "reason"],
+      },
+    },
+    improvementTopics: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: { topic: { type: Type.STRING }, reason: { type: Type.STRING } },
+        required: ["topic", "reason"],
+      },
+    },
+    recommendations: {
+      type: Type.ARRAY,
+      items: {
+        type: Type.OBJECT,
+        properties: {
+          type: { type: Type.STRING, enum: ["lesson", "quiz", "simulation"] },
+          id: { type: Type.STRING },
+          title: { type: Type.STRING },
+          reason: { type: Type.STRING },
+        },
+        required: ["type", "id", "title", "reason"],
+      },
+    },
+    studyTip: { type: Type.STRING },
+    confidence: { type: Type.STRING, enum: ["high", "medium", "low"] },
+  },
+  required: ["summary", "strongTopics", "improvementTopics", "recommendations", "studyTip", "confidence"],
+};
+
+function sendError(res: Response, error: unknown): void {
+  if (error instanceof z.ZodError) {
+    res.status(400).json({ error: "Payload AI tidak valid.", code: "AI_INVALID_REQUEST" });
+    return;
+  }
+  const anyError = error as any;
+  const statusCode =
+    error instanceof AiServiceError
+      ? error.statusCode
+      : Number.isInteger(anyError?.statusCode)
+        ? anyError.statusCode
+        : 500;
+  const code = error instanceof AiServiceError ? error.code : anyError?.code || "AI_INTERNAL_ERROR";
+  const message =
+    statusCode >= 500
+      ? error instanceof AiServiceError
+        ? error.message
+        : FRIENDLY_UNAVAILABLE
+      : anyError?.message || "Permintaan AI tidak dapat diproses.";
+
+  if (statusCode >= 500) {
+    console.error("AI request failed", { code, statusCode });
+  }
+  res.status(statusCode).json({
+    error: message,
+    code,
+    retryable: error instanceof AiServiceError ? error.retryable : false,
+  });
+}
+
+function requireAvailable(dependencies: AiRouteDependencies) {
+  if (!dependencies.configState.configured || !dependencies.configState.config || !dependencies.provider) {
+    throw new AiServiceError(
+      "AI Tutor belum tersedia karena konfigurasi Vertex AI belum lengkap.",
+      "AI_NOT_CONFIGURED",
+      503,
+      false
+    );
+  }
+  return dependencies.configState.config;
+}
+
+function compactAssistantContent(content: string): string {
+  try {
+    const parsed = JSON.parse(content);
+    return typeof parsed?.answer === "string" ? parsed.answer : content;
+  } catch {
+    return content;
+  }
+}
+
+function compactHistory(
+  history: Array<Record<string, any>>,
+  maximum: number
+): Array<{ role: "user" | "assistant"; content: string }> {
+  return history
+    .filter((item) => item?.role === "user" || item?.role === "assistant")
+    .slice(-maximum)
+    .map((item) => {
+      const rawContent = item.role === "assistant" ? compactAssistantContent(item.content) : item.content;
+      let content = rawContent;
+      try {
+        content = sanitizeAiInput(rawContent).sanitizedText;
+      } catch {
+        content = "[SENSITIVE_CONTENT_REMOVED]";
+      }
+      return {
+        role: item.role as "user" | "assistant",
+        content: content.slice(0, 2_000),
+      };
+    });
+}
+
+function clip(value: unknown, maximum: number): string {
+  return typeof value === "string" ? value.trim().slice(0, maximum) : "";
+}
+
+export function createAiRouter(dependencies: AiRouteDependencies): Router {
+  const router = Router();
+  const quota = dependencies.quota || new UserAiQuota();
+  const deduplicator = dependencies.deduplicator || new AiRequestDeduplicator();
+  const messageLoader = dependencies.messageLoader || listMessages;
+
+  router.use(authenticateUser);
+
+  router.post("/tutor", async (req: AuthenticatedRequest, res) => {
+    try {
+      const config = requireAvailable(dependencies);
+      const payload = tutorRequestSchema.parse(req.body);
+      if (payload.message.length > config.maxInputChars) {
+        res.status(413).json({
+          error: `Pesan terlalu panjang (maksimal ${config.maxInputChars.toLocaleString("id-ID")} karakter).`,
+          code: "AI_INPUT_TOO_LONG",
+        });
+        return;
+      }
+
+      const uid = req.authUser!.uid;
+      const verifiedConversationHistory = payload.conversationId
+        ? await messageLoader(uid, payload.conversationId)
+        : undefined;
+      const { sanitizedText, warningMsg } = sanitizeAiInput(payload.message);
+      if (detectPromptInjection(sanitizedText)) {
+        res.json({
+          answer:
+            "Saya tidak dapat menampilkan system prompt, mengubah skor, memanipulasi XP, atau melanggar batasan sistem. Saya siap membantu mempelajari keamanan siber defensif secara legal dan aman.",
+          summary: "Permintaan ditolak karena melanggar batasan keamanan prompt.",
+          suggestedQuestions: ["Bagaimana cara belajar keamanan siber secara aman?", "Apa itu keamanan defensif?"],
+          safetyStatus: "blocked_and_redirected",
+          requiresOfficialHelp: false,
+          warningMsg,
+        });
+        return;
+      }
+      if (detectHarmfulRequest(sanitizedText)) {
+        res.json({
+          answer:
+            "Saya tidak dapat memberikan panduan untuk meretas, membuat malware, atau membobol akun. Saya dapat membantu dengan deteksi ancaman, pengamanan akun, dan respons insiden yang aman.",
+          summary: "Permintaan berbahaya ditolak dan dialihkan ke alternatif defensif.",
+          suggestedQuestions: ["Bagaimana cara mendeteksi malware?", "Bagaimana cara mengamankan akun?"],
+          safetyStatus: "blocked_and_redirected",
+          requiresOfficialHelp: false,
+          warningMsg,
+        });
+        return;
+      }
+
+      const result = await deduplicator.run(
+        payload.requestId ? `${uid}:tutor:${payload.requestId}` : undefined,
+        async () => {
+          quota.consume(uid, "tutor", 20, 1_500);
+          const sourceHistory = verifiedConversationHistory || payload.history || [];
+          const recentHistory = compactHistory(sourceHistory, config.maxHistoryMessages);
+
+          const contextLines = [
+            `- Tipe Konteks: ${payload.contextType || "general"}`,
+            clip(payload.learningPathTitle, 200) && `- Learning Path: ${clip(payload.learningPathTitle, 200)}`,
+            clip(payload.courseTitle, 200) && `- Course: ${clip(payload.courseTitle, 200)}`,
+            clip(payload.lessonTitle, 200) && `- Lesson: ${clip(payload.lessonTitle, 200)}`,
+            clip(payload.lessonSummary, 2_500) && `- Ringkasan Lesson: ${clip(payload.lessonSummary, 2_500)}`,
+          ].filter(Boolean);
+          if (payload.contextType === "remedial" && payload.quizIncorrectTopics) {
+            contextLines.push(
+              `- Topik Kuis yang Perlu Diperkuat: ${JSON.stringify(
+                payload.quizIncorrectTopics.slice(0, 8).map((item) => item.slice(0, 300))
+              )}`
+            );
+          }
+          if (payload.contextType === "simulation" && payload.simulationDetails) {
+            contextLines.push(`- Detail Simulasi: ${JSON.stringify(payload.simulationDetails).slice(0, 1_200)}`);
+          }
+
+          const historyText = recentHistory
+            .map((item) => `${item.role === "user" ? "User" : "Assistant"}: ${item.content}`)
+            .join("\n");
+          const prompt = `KONTEKS PEMBELAJARAN:\n${contextLines.join("\n")}
+
+RIWAYAT PERCAKAPAN TERBARU:
+${historyText || "(belum ada)"}
+
+PERTANYAAN PENGGUNA:
+${sanitizedText}
+
+Kembalikan hanya JSON sesuai schema. Jangan menambahkan markdown fence atau teks di luar JSON.`;
+
+          const raw = await generateWithRetry(
+            dependencies.provider!,
+            {
+              contents: prompt,
+              systemInstruction: MASTER_SYSTEM_PROMPT,
+              temperature: 0.3,
+              responseSchema: tutorResponseJsonSchema,
+            },
+            config
+          );
+          const parsed = parseStructuredOutput(raw, tutorResponseSchema);
+          return warningMsg ? { ...parsed, warningMsg } : parsed;
+        }
+      );
+      res.json(result);
+    } catch (error) {
+      sendError(res, error);
+    }
+  });
+
+  router.post("/insight", async (req: AuthenticatedRequest, res) => {
+    try {
+      const config = requireAvailable(dependencies);
+      const payload = insightRequestSchema.parse(req.body);
+      const uid = req.authUser!.uid;
+      const result = await deduplicator.run(
+        payload.requestId ? `${uid}:insight:${payload.requestId}` : undefined,
+        async () => {
+          quota.consume(uid, "insight", 10, 2_000);
+          const recentQuizScores = payload.quizScores.slice(-3).map((item: any) => ({
+            courseId: clip(item?.courseId, 128),
+            score: Number.isFinite(item?.score) ? Math.max(0, Math.min(100, item.score)) : 0,
+            passed: item?.passed === true,
+            incorrectTopics: Array.isArray(item?.incorrectTopics)
+              ? item.incorrectTopics.slice(0, 8).map((topic: unknown) => clip(topic, 200))
+              : [],
+          }));
+          const recentSimulationResults = payload.simulationResults.slice(-3).map((item: any) => ({
+            simulationId: clip(item?.simulationId, 128),
+            classification: clip(item?.classification, 100),
+            score: Number.isFinite(item?.score) ? Math.max(0, Math.min(100, item.score)) : 0,
+            passed: item?.passed === true,
+          }));
+
+          const prompt = `DATA BELAJAR PENGGUNA:
+- Progress Pembelajaran: ${payload.overallProgress}% selesai
+- Jumlah Lesson Selesai: ${payload.completedLessonsCount}
+- Hasil Kuis Terbaru: ${JSON.stringify(recentQuizScores)}
+- Hasil Simulasi Terbaru: ${JSON.stringify(recentSimulationResults)}
+
+Buat analisis perkembangan belajar siber defensif. Kembalikan hanya JSON sesuai schema tanpa markdown fence.`;
+          const raw = await generateWithRetry(
+            dependencies.provider!,
+            {
+              contents: prompt,
+              systemInstruction: INSIGHT_SYSTEM_PROMPT,
+              temperature: 0.2,
+              responseSchema: insightResponseJsonSchema,
+            },
+            config
+          );
+          return parseStructuredOutput(raw, learningInsightSchema);
+        }
+      );
+      res.json(result);
+    } catch (error) {
+      sendError(res, error);
+    }
+  });
+
+  return router;
+}

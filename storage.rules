@@ -1,0 +1,21 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Helper function to check if user is authenticated
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // Helper to check if request is from the owner of the resource
+    function isOwner(uid) {
+      return isAuthenticated() && request.auth.uid == uid;
+    }
+
+    match /users/{uid}/avatar/{filename} {
+      allow read: if true; // Avatars are publicly readable for displaying on profiles/leaderboards
+      allow write: if isOwner(uid) && 
+                    request.resource.size < 2 * 1024 * 1024 && 
+                    request.resource.contentType.matches('image/(jpeg|png|webp)');
+    }
+  }
+}

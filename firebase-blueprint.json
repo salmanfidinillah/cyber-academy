@@ -1,0 +1,139 @@
+{
+  "entities": {
+    "user": {
+      "title": "User",
+      "description": "Registered user profile details",
+      "type": "object",
+      "properties": {
+        "uid": {
+          "type": "string"
+        },
+        "displayName": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 100
+        },
+        "email": {
+          "type": "string"
+        },
+        "photoURL": {
+          "type": "string"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["user", "admin"]
+        },
+        "accountStatus": {
+          "type": "string",
+          "enum": ["active", "disabled"]
+        },
+        "onboardingCompleted": {
+          "type": "boolean"
+        },
+        "totalXp": {
+          "type": "number"
+        },
+        "currentLevel": {
+          "type": "number"
+        },
+        "learningStreak": {
+          "type": "number"
+        },
+        "longestStreak": {
+          "type": "number"
+        },
+        "lastStudyDate": {
+          "type": "string"
+        },
+        "lastActiveAt": {
+          "type": "string"
+        },
+        "createdAt": {
+          "type": "string"
+        },
+        "updatedAt": {
+          "type": "string"
+        },
+        "providerIds": {
+          "type": "array"
+        },
+        "emailVerified": {
+          "type": "boolean"
+        },
+        "learningGoal": {
+          "type": "string",
+          "maxLength": 1000
+        },
+        "skillLevel": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "interests": {
+          "type": "array"
+        },
+        "studyTime": {
+          "type": "string",
+          "maxLength": 100
+        },
+        "bio": {
+          "type": "string",
+          "maxLength": 500
+        }
+      },
+      "required": ["uid", "email", "role", "accountStatus"]
+    },
+    "userProgress": {
+      "title": "User Progress",
+      "description": "User learning progress for lessons, courses, and learning paths",
+      "type": "object",
+      "properties": {
+        "progressId": { "type": "string" },
+        "userId": { "type": "string" },
+        "contentType": { "type": "string", "enum": ["lesson", "course", "path"] },
+        "contentId": { "type": "string" },
+        "learningPathId": { "type": "string" },
+        "courseId": { "type": "string" },
+        "status": { "type": "string", "enum": ["not_started", "in_progress", "completed"] },
+        "progressPercent": { "type": "number" },
+        "completedLessonCount": { "type": "number" },
+        "totalLessonCount": { "type": "number" },
+        "lessonsCompleted": { "type": "boolean" },
+        "lastLessonId": { "type": "string" },
+        "startedAt": { "type": "string" },
+        "completedAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["userId", "contentType", "contentId", "status", "progressPercent"]
+    },
+    "xpTransaction": {
+      "title": "XP Transaction",
+      "description": "Idempotent server-authoritative XP transactions",
+      "type": "object",
+      "properties": {
+        "transactionId": { "type": "string" },
+        "userId": { "type": "string" },
+        "sourceType": { "type": "string" },
+        "sourceId": { "type": "string" },
+        "amount": { "type": "number" },
+        "reason": { "type": "string" },
+        "idempotencyKey": { "type": "string" },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["userId", "sourceType", "sourceId", "amount", "idempotencyKey"]
+    }
+  },
+  "firestore": {
+    "users/{uid}": {
+      "schema": "user",
+      "description": "User profiles"
+    },
+    "userProgress/{progressId}": {
+      "schema": "userProgress",
+      "description": "User learning progress"
+    },
+    "xpTransactions/{transactionId}": {
+      "schema": "xpTransaction",
+      "description": "User XP transactions"
+    }
+  }
+}

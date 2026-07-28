@@ -1,0 +1,125 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Default-deny catch-all
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+
+
+    // Users collection rules
+    match /users/{uid} {
+      allow get: if isOwner(uid);
+      
+      allow create: if isOwner(uid) && 
+                       isValidId(uid) &&
+                       incoming().keys().hasOnly([
+                         'uid', 'email', 'displayName', 'photoURL', 'role', 'accountStatus',
+                         'onboardingCompleted', 'bio', 'learningGoal', 'skillLevel',
+                         'interests', 'studyTime', 'createdAt', 'updatedAt', 'lastActiveAt'
+                       ]) &&
+                       incoming().uid == uid &&
+                       incoming().role == 'user' &&
+                       incoming().accountStatus == 'active' &&
+                       incoming().onboardingCompleted == false &&
+                       incoming().interests is list &&
+                       incoming().interests.size() <= 20 &&
+                       incoming().createdAt is timestamp &&
+                       incoming().updatedAt is timestamp &&
+                       incoming().lastActiveAt is timestamp &&
+                       incoming().uid is string && incoming().uid.size() <= 128 &&
+                       incoming().email is string && incoming().email.size() <= 256 &&
+                       incoming().displayName is string && incoming().displayName.size() <= 100 &&
+                       incoming().photoURL is string && incoming().photoURL.size() <= 1024 &&
+                       incoming().bio is string && incoming().bio.size() <= 500 &&
+                       incoming().learningGoal is string && incoming().learningGoal.size() <= 1000 &&
+                       incoming().skillLevel is string && incoming().skillLevel.size() <= 100 &&
+                       incoming().studyTime is string && incoming().studyTime.size() <= 100;
+                       
+      allow update: if isOwner(uid) && 
+                       isValidId(uid) &&
+                       incoming().diff(existing()).affectedKeys().hasOnly([
+                         'displayName', 'bio', 'photoURL', 'learningGoal', 
+                         'skillLevel', 'interests', 'studyTime', 'onboardingCompleted', 
+                         'updatedAt', 'lastActiveAt'
+                       ]) &&
+                       (!incoming().diff(existing()).affectedKeys().hasAny(['displayName']) || (incoming().displayName is string && incoming().displayName.size() <= 100)) &&
+                       (!incoming().diff(existing()).affectedKeys().hasAny(['bio']) || (incoming().bio is string && incoming().bio.size() <= 500)) &&
+                       (!incoming().diff(existing()).affectedKeys().hasAny(['photoURL']) || (incoming().photoURL is string && incoming().photoURL.size() <= 1024)) &&
+                       (!incoming().diff(existing()).affectedKeys().hasAny(['learningGoal']) || (incoming().learningGoal is string && incoming().learningGoal.size() <= 1000)) &&
+                       (!incoming().diff(existing()).affectedKeys().hasAny(['skillLevel']) || (incoming().skillLevel is string && incoming().skillLevel.size() <= 100)) &&
+                       (!incoming().diff(existing()).affectedKeys().hasAny(['studyTime']) || (incoming().studyTime is string && incoming().studyTime.size() <= 100)) &&
+                       (!incoming().diff(existing()).affectedKeys().hasAny(['onboardingCompleted']) || (incoming().onboardingCompleted is bool)) &&
+                       (!incoming().diff(existing()).affectedKeys().hasAny(['interests']) || (incoming().interests is list && incoming().interests.size() <= 20)) &&
+                       (!incoming().diff(existing()).affectedKeys().hasAny(['updatedAt']) || (incoming().updatedAt is timestamp)) &&
+                       (!incoming().diff(existing()).affectedKeys().hasAny(['lastActiveAt']) || (incoming().lastActiveAt is timestamp));
+    }
+
+    // userProgress collection:
+    // Client SDK direct reads/writes are strictly denied (handled exclusively by backend Admin SDK via authenticated API).
+    match /userProgress/{id} {
+      allow read, write: if false;
+    }
+
+    // xpTransactions collection:
+    // Client SDK direct reads/writes are strictly denied (handled exclusively by backend Admin SDK via authenticated API).
+    match /xpTransactions/{id} {
+      allow read, write: if false;
+    }
+
+    // Content management collections:
+    // All reads and writes from client SDK are strictly denied.
+    // Content CRUD and public catalog delivery are handled exclusively by the trusted backend Admin SDK.
+    match /learningPaths/{id} {
+      allow read, write: if false;
+    }
+
+    match /courses/{id} {
+      allow read, write: if false;
+    }
+
+    match /lessons/{id} {
+      allow read, write: if false;
+    }
+
+    match /adminAuditLogs/{id} {
+      allow read, write: if false;
+    }
+
+    // Server-authoritative learning and achievement data.
+    // Every operation is exposed through authenticated Express endpoints.
+    match /quizzes/{id} { allow read, write: if false; }
+    match /questions/{id} { allow read, write: if false; }
+    match /quizAttempts/{id} { allow read, write: if false; }
+    match /quizSummaries/{id} { allow read, write: if false; }
+    match /simulations/{id} { allow read, write: if false; }
+    match /simulationAttempts/{id} { allow read, write: if false; }
+    match /badges/{id} { allow read, write: if false; }
+    match /userBadges/{id} { allow read, write: if false; }
+    match /certificates/{id} { allow read, write: if false; }
+    match /aiConversations/{id} { allow read, write: if false; }
+    match /aiMessages/{id} { allow read, write: if false; }
+  }
+}
