@@ -14,7 +14,7 @@ Advanced awalnya sengaja belum diisi pada batch ini agar perubahan besar dapat d
 - 1 Final Quiz Intermediate pada kelas Incident Response, berisi 20 soal lintas materi.
 - Passing grade Intermediate: 75.
 - Total XP satu kali dari lesson dan quiz: 500 XP.
-- Badge: `badge-intermediate-defender`.
+- Badge: `badge-intermediate-defender` dengan nama publik **Intermediate Master**.
 - Sertifikat: memakai sistem sertifikat generik dengan `learningPathId=intermediate-path`.
 
 ## Aturan Unlock

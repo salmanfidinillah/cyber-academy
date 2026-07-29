@@ -40,6 +40,7 @@ vi.mock("../lib/learningStore", () => ({
 vi.mock("../services/achievementService", () => ({
   fetchMyBadges: vi.fn().mockResolvedValue([]),
   fetchMyCertificates: vi.fn().mockResolvedValue([]),
+  evaluateMyBadgeState: vi.fn().mockResolvedValue({ userBadges: [], progress: [] }),
 }));
 
 import { Dashboard } from "./Dashboard";

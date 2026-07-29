@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { evaluateMyBadges, fetchBadges } from "../services/achievementService";
-import { Badge, UserBadge, User } from "../types";
+import { evaluateMyBadgeState, fetchBadges } from "../services/achievementService";
+import { Badge, BadgeProgress, UserBadge, User } from "../types";
 import { 
   Award, Lock, Share2, X, Check, Calendar, ExternalLink, 
-  Footprints, Key, Mail, ShieldAlert, Scan, Shield, Trophy
+  Footprints, Key, Mail, ShieldAlert, Scan, Shield, Trophy,
+  BookOpen, Layers3, Crown
 } from "lucide-react";
 
 interface BadgeListProps {
@@ -20,6 +21,10 @@ const BADGE_ICONS: Record<string, any> = {
   "shield-check": Shield,
   "scan": Scan,
   "trophy": Trophy,
+  "book-shield": BookOpen,
+  "layers-shield": Layers3,
+  "crown-shield": Crown,
+  "shield-alert": ShieldAlert,
 };
 
 const PASTEL_BG_MAP: Record<string, string> = {
@@ -32,6 +37,7 @@ const PASTEL_BG_MAP: Record<string, string> = {
 export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
   const [systemBadges, setSystemBadges] = useState<Badge[]>([]);
   const [userBadges, setUserBadges] = useState<UserBadge[]>([]);
+  const [badgeProgress, setBadgeProgress] = useState<BadgeProgress[]>([]);
   const [selectedBadge, setSelectedBadge] = useState<Badge | null>(null);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [copiedIndex, setCopiedIndex] = useState(false);
@@ -42,11 +48,12 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
     let active = true;
     setIsEvaluating(true);
     setLoadError("");
-    Promise.all([fetchBadges(), evaluateMyBadges()])
-      .then(([badges, awards]) => {
+    Promise.all([fetchBadges(), evaluateMyBadgeState()])
+      .then(([badges, state]) => {
         if (!active) return;
         setSystemBadges(badges);
-        setUserBadges(awards);
+        setUserBadges(state.userBadges);
+        setBadgeProgress(state.progress);
       })
       .catch((err) => {
         if (active) setLoadError(err.message || "Gagal memuat badge.");
@@ -65,6 +72,10 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
 
   const getAwardedDetails = (badgeSlug: string) => {
     return userBadges.find(ub => ub.badgeSlug === badgeSlug);
+  };
+
+  const getProgress = (badgeId: string) => {
+    return badgeProgress.find((item) => item.badgeId === badgeId);
   };
 
   const handleShare = (badge: Badge) => {
@@ -147,18 +158,29 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
       </div>
 
       {/* Grid of Badges */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+      {isEvaluating && systemBadges.length === 0 && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" aria-label="Memuat badge">
+          {[0, 1, 2, 3].map((item) => (
+            <div
+              key={item}
+              className="h-64 border-3 border-black rounded-xl bg-gray-100 shadow-[4px_4px_0px_0px_#000000] animate-pulse"
+            />
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {filteredBadges.map((badge) => {
           const unlocked = isUnlocked(badge.slug);
           const bgClass = unlocked ? PASTEL_BG_MAP[badge.badgeId] || "bg-pastel-mint" : "bg-gray-100 opacity-75";
-          const details = getAwardedDetails(badge.slug);
+          const progress = getProgress(badge.badgeId);
 
           return (
             <motion.div
               key={badge.badgeId}
               layoutId={badge.badgeId}
               onClick={() => setSelectedBadge(badge)}
-              className={`border-3 border-black p-5 rounded-xl shadow-[4px_4px_0px_0px_#000000] cursor-pointer transition-all duration-300 relative group flex flex-col justify-between h-56 hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#000000] ${bgClass}`}
+              className={`border-3 border-black p-5 rounded-xl shadow-[4px_4px_0px_0px_#000000] cursor-pointer transition-all duration-300 relative group flex flex-col justify-between min-h-64 hover:-translate-y-1 hover:shadow-[6px_6px_0px_0px_#000000] ${bgClass}`}
               whileTap={{ scale: 0.98 }}
             >
               <div>
@@ -186,12 +208,26 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
               </div>
 
               <div className="border-t border-black/10 pt-3 flex justify-between items-center">
-                <span className="text-[10px] font-mono text-gray-600 font-bold uppercase">
-                  {badge.category}
-                </span>
-                <span className="text-[10px] font-bold underline text-black group-hover:text-black/80 flex items-center gap-1">
-                  Detail <ExternalLink className="w-2.5 h-2.5" />
-                </span>
+                <div className="w-full">
+                  <div className="mb-2 flex items-center justify-between text-[10px] font-bold">
+                    <span>{progress?.completedItems ?? 0}/{progress?.totalItems ?? 0}</span>
+                    <span>{progress?.progressPercent ?? 0}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full border border-black bg-white">
+                    <div
+                      className="h-full bg-black transition-[width]"
+                      style={{ width: `${Math.min(100, Math.max(0, progress?.progressPercent ?? 0))}%` }}
+                    />
+                  </div>
+                  <div className="mt-2 flex items-center justify-between">
+                    <span className="text-[10px] font-mono text-gray-600 font-bold uppercase">
+                      {badge.category}
+                    </span>
+                    <span className="text-[10px] font-bold underline text-black group-hover:text-black/80 flex items-center gap-1">
+                      Detail <ExternalLink className="w-2.5 h-2.5" />
+                    </span>
+                  </div>
+                </div>
               </div>
             </motion.div>
           );
@@ -279,13 +315,22 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
                   <div className="bg-gray-100 border-2 border-black p-4 rounded-xl w-full text-left shadow-[3px_3px_0px_0px_#000000] mb-6">
                     <h4 className="text-xs font-mono font-bold uppercase text-gray-400 mb-2">Syarat Kelulusan</h4>
                     <p className="text-xs text-gray-600 leading-relaxed">
-                      {selectedBadge.slug === "first-step" && "Selesaikan materi pelajaran (lesson) pertama pada jalur belajar manapun."}
-                      {selectedBadge.slug === "password-guard" && "Selesaikan 2 materi pelajaran dasar pada kelas 'Password dan Keamanan Akun' serta lulus ujian kuis dengan nilai minimal 70."}
-                      {selectedBadge.slug === "phishing-hunter" && "Selesaikan 3 materi pelajaran dasar pada kelas 'Phishing dan Penipuan Digital' serta lulus ujian kuis dengan nilai minimal 70."}
-                      {selectedBadge.slug === "privacy-protector" && "Selesaikan 2 materi pelajaran dasar pada kelas 'Privasi dan Data Pribadi' serta lulus ujian kuis dengan nilai minimal 70."}
-                      {selectedBadge.slug === "simulation-analyst" && "Selesaikan Simulasi Deteksi Email Phishing dengan memilih klasifikasi yang benar dan minimal 3 indikator ancaman yang tepat."}
-                      {selectedBadge.slug === "cyber-defender" && "Selesaikan seluruh kurikulum Beginner Learning Path: seluruh 9 materi pelajaran selesai dan lulus seluruh 4 ujian kuis dengan nilai >= 70."}
+                      {selectedBadge.requirementLabel || selectedBadge.description}
                     </p>
+                    {getProgress(selectedBadge.badgeId) && (
+                      <div className="mt-3">
+                        <div className="mb-1 flex justify-between text-[10px] font-bold">
+                          <span>Progress terverifikasi server</span>
+                          <span>{getProgress(selectedBadge.badgeId)!.progressPercent}%</span>
+                        </div>
+                        <div className="h-2 overflow-hidden rounded-full border border-black bg-white">
+                          <div
+                            className="h-full bg-black"
+                            style={{ width: `${getProgress(selectedBadge.badgeId)!.progressPercent}%` }}
+                          />
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -303,7 +348,7 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
                     <button
                       onClick={() => {
                         setSelectedBadge(null);
-                        if (selectedBadge.slug === "simulation-analyst") {
+                        if (selectedBadge.slug === "simulation-defender") {
                           onNavigate("/simulations");
                         } else {
                           onNavigate("/learn/paths");
@@ -311,7 +356,7 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
                       }}
                       className="flex-grow bg-[#FFE696] hover:bg-[#ffe082] text-black font-bold border-2 border-black py-2.5 px-4 rounded shadow-[3px_3px_0px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer text-sm"
                     >
-                      {selectedBadge.slug === "simulation-analyst" ? "Kerjakan Simulasi Sekarang" : "Belajar Sekarang"}
+                      {selectedBadge.slug === "simulation-defender" ? "Kerjakan Simulasi Sekarang" : "Belajar Sekarang"}
                     </button>
                   )}
                 </div>

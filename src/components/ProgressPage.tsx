@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef, useCallback } from "react";
 import { ArrowLeft, Award, CheckCircle, Clock, Shield, Sparkles, TrendingUp, History, Flame, RefreshCw } from "lucide-react";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
-import { User, XpTransaction } from "../types";
+import { BadgeProgress, User, XpTransaction } from "../types";
 import {
   getLevelProgressPercent,
   getXpNeededForNextLevel
@@ -14,6 +14,7 @@ import {
   fetchMyXpTransactions,
   resetMyLearningState
 } from "../services/learningStateService";
+import { evaluateMyBadgeState } from "../services/achievementService";
 
 interface ProgressPageProps {
   currentUser?: User;
@@ -36,6 +37,8 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({
   const [catalogLessons, setCatalogLessons] = useState<any[]>([]);
   const [loadingCatalog, setLoadingCatalog] = useState(true);
   const [catalogError, setCatalogError] = useState<string | null>(null);
+  const [badgeProgress, setBadgeProgress] = useState<BadgeProgress[]>([]);
+  const [badgeError, setBadgeError] = useState<string | null>(null);
 
   const isMountedRef = useRef<boolean>(true);
 
@@ -95,6 +98,19 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({
         })
         .catch((err) => {
           console.error("Gagal memuat transaksi XP di ProgressPage:", err);
+        });
+
+      setBadgeError(null);
+      evaluateMyBadgeState()
+        .then((state) => {
+          if (isMountedRef.current) setBadgeProgress(state.progress);
+        })
+        .catch((err) => {
+          console.error("Gagal memuat progress badge di ProgressPage:", err);
+          if (isMountedRef.current) {
+            setBadgeProgress([]);
+            setBadgeError(err.message || "Gagal memuat progress badge.");
+          }
         });
 
       loadCatalogData();
@@ -292,40 +308,31 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({
 
           <NeoCard bgColor="bg-white" className="p-5 space-y-4">
             <p className="text-xs text-brand-muted font-bold">
-              Lencana otomatis diraih setelah kamu melulusi kelas-kelas siber terkait.
+              Empat lencana milestone dievaluasi langsung oleh server berdasarkan jalur belajar dan simulasi wajib.
             </p>
 
             <div className="grid grid-cols-1 gap-3.5">
-              <div className="flex items-center space-x-3 bg-pastel-mint/20 border-2 border-brand-border p-3 rounded-2xl">
-                <div className="w-12 h-12 bg-pastel-mint rounded-xl border-2 border-brand-border flex items-center justify-center text-2xl shadow-sm rotate-[-2deg]">
-                  🛡️
+              {badgeProgress.map((badge) => (
+                <div key={badge.badgeId} className="border-2 border-brand-border p-3 rounded-2xl bg-brand-surface/10">
+                  <div className="mb-2 flex items-center justify-between gap-2">
+                    <h4 className="font-heading font-bold text-xs sm:text-sm text-brand-text">{badge.title}</h4>
+                    <span className="text-[10px] font-bold">{badge.progressPercent}%</span>
+                  </div>
+                  <div className="h-2 overflow-hidden rounded-full border border-brand-border bg-white">
+                    <div className="h-full bg-brand-text" style={{ width: `${badge.progressPercent}%` }} />
+                  </div>
+                  <p className="mt-2 text-[11px] text-brand-muted font-semibold">
+                    {badge.completedItems} dari {badge.totalItems} persyaratan utama selesai
+                  </p>
                 </div>
-                <div>
-                  <h4 className="font-heading font-bold text-xs sm:text-sm text-brand-text">First Step</h4>
-                  <p className="text-[11px] text-brand-muted font-semibold">Telah lulus kelas Fondasi Keamanan Siber.</p>
-                </div>
-              </div>
-
-              <div className={`flex items-center space-x-3 p-3 rounded-2xl border-2 ${userProgress[`${currentUser.uid}_course_cyber-passwords`]?.status === "completed" ? "bg-pastel-yellow/20 border-brand-border" : "bg-brand-surface/10 border-brand-border/20 opacity-40"}`}>
-                <div className="w-12 h-12 bg-pastel-yellow rounded-xl border-2 border-brand-border flex items-center justify-center text-2xl shadow-sm">
-                  🔐
-                </div>
-                <div>
-                  <h4 className="font-heading font-bold text-xs sm:text-sm text-brand-text">Key Master</h4>
-                  <p className="text-[11px] text-brand-muted font-semibold">Telah lulus kelas Sandi & Keamanan Akun.</p>
-                </div>
-              </div>
-
-              <div className={`flex items-center space-x-3 p-3 rounded-2xl border-2 ${userProgress[`${currentUser.uid}_course_cyber-phishing`]?.status === "completed" ? "bg-pastel-blue/20 border-brand-border" : "bg-brand-surface/10 border-brand-border/20 opacity-40"}`}>
-                <div className="w-12 h-12 bg-pastel-blue rounded-xl border-2 border-brand-border flex items-center justify-center text-2xl shadow-sm">
-                  🎣
-                </div>
-                <div>
-                  <h4 className="font-heading font-bold text-xs sm:text-sm text-brand-text">Phish Hunter</h4>
-                  <p className="text-[11px] text-brand-muted font-semibold">Telah lulus kuis Phishing & Penipuan.</p>
-                </div>
-              </div>
+              ))}
+              {badgeError && (
+                <p className="text-xs font-bold text-red-600">{badgeError}</p>
+              )}
             </div>
+            <NeoButton variant="secondary" size="sm" onClick={() => onNavigate("/badges")} className="w-full text-xs font-bold">
+              Buka Galeri Lencana
+            </NeoButton>
           </NeoCard>
         </div>
 

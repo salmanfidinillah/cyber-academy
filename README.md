@@ -182,6 +182,17 @@ npm run seed-content -- --confirm
 
 Tanpa flag `--confirm`, skrip akan menampilkan pesan peringatan dan keluar dengan *exit code 1* tanpa menginisialisasi Firebase Admin dan tanpa menyentuh Cloud Firestore.
 
+Sinkronisasi empat badge milestone dapat diperiksa melalui dry-run, lalu
+dijalankan dengan konfirmasi:
+
+```bash
+npm run seed-badges
+npm run seed-badges -- --confirm
+```
+
+Panduan eligibility, progress, migrasi legacy, dan rollback badge tersedia di
+`docs/badges.md`.
+
 ### 4. Arsitektur Runtime Firestore Eksklusif & Verifikasi Katalog (Step 2B-B1.5)
 - **Sumber Tunggal Data Katalog**: `server/services/contentService.ts` membaca dan menulis 100% dari Cloud Firestore. Seluruh fallback ke data statis `src/data.ts` untuk runtime catalog telah dihapus.
 - **Dynamic Dashboard Active Path Selection**: Dashboard memilih `activePath` secara dinamis berdasarkan progres pengguna (mencari path berstatus `in_progress`, lalu `published` pertama).

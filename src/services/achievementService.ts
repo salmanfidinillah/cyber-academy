@@ -1,4 +1,4 @@
-import { Badge, Certificate, UserBadge } from "../types";
+import { Badge, BadgeProgress, Certificate, UserBadge } from "../types";
 import { authenticatedFetch } from "./apiClient";
 
 async function parse<T>(response: Response, fallback: string): Promise<T> {
@@ -16,14 +16,31 @@ export async function fetchMyBadges(): Promise<UserBadge[]> {
 }
 
 export async function evaluateMyBadges(): Promise<UserBadge[]> {
-  const result = await parse<{ userBadges: UserBadge[] }>(
+  const result = await evaluateMyBadgeState();
+  return result.userBadges;
+}
+
+export interface MyBadgeState {
+  userBadges: UserBadge[];
+  progress: BadgeProgress[];
+}
+
+export async function evaluateMyBadgeState(): Promise<MyBadgeState> {
+  const result = await parse<MyBadgeState>(
     await authenticatedFetch("/api/me/badges/evaluate", {
       method: "POST",
       body: JSON.stringify({}),
     }),
     "Gagal mengevaluasi badge."
   );
-  return result.userBadges;
+  return result;
+}
+
+export async function fetchMyBadgeProgress(): Promise<BadgeProgress[]> {
+  return parse<BadgeProgress[]>(
+    await authenticatedFetch("/api/me/badges/progress"),
+    "Gagal mengambil progress badge."
+  );
 }
 
 export interface CertificateEligibility {

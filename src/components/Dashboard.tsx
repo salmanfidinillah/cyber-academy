@@ -23,6 +23,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser: propUser, onN
   // 1. ALL HOOKS MUST BE DECLARED AT TOP LEVEL IN FIXED ORDER
   const [userProgress, setUserProgress] = useState<Record<string, any>>({});
   const [earnedBadgesCount, setEarnedBadgesCount] = useState<number>(0);
+  const [earnedBadgeIds, setEarnedBadgeIds] = useState<Set<string>>(new Set());
   const [hasCert, setHasCert] = useState<boolean>(false);
   const [catalogPaths, setCatalogPaths] = useState<any[]>([]);
   const [catalogCourses, setCatalogCourses] = useState<any[]>([]);
@@ -90,6 +91,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser: propUser, onN
         .then(([badges, certificates]) => {
           if (!isMountedRef.current) return;
           setEarnedBadgesCount(badges.length);
+          setEarnedBadgeIds(new Set(badges.map((badge) => badge.badgeId)));
           setHasCert(certificates.some((certificate) => certificate.status === "active"));
         })
         .catch((err) => console.error("Gagal memuat pencapaian Dashboard:", err));
@@ -420,18 +422,19 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser: propUser, onN
               <h3 className="font-heading font-bold text-base text-brand-text">Lencana Pertahanan</h3>
             </div>
             <p className="text-xs text-brand-muted font-semibold">
-              Anda telah meraih <span className="font-bold text-black">{earnedBadgesCount} / 6</span> lencana siber defensif yang dievaluasi secara aman di server.
+              Anda telah meraih <span className="font-bold text-black">{earnedBadgesCount} / 4</span> lencana milestone yang dievaluasi secara aman di server.
             </p>
             <div className="flex flex-wrap gap-2 pt-1">
-              <div className="flex items-center space-x-1 bg-[#B4E0FA] border-2 border-brand-border px-2.5 py-1 rounded-xl text-xs font-bold shadow-[2px_2px_0px_0px_#000000] rotate-[-1deg]">
-                <span>🛡️ First Step</span>
-              </div>
-              <div className={`flex items-center space-x-1 border-2 px-2.5 py-1 rounded-xl text-xs font-bold shadow-[2px_2px_0px_0px_#000000] ${earnedBadgesCount > 1 ? "bg-[#FFE696] border-brand-border" : "bg-gray-100 border-gray-300 opacity-45"}`}>
-                <span>🔐 Guard</span>
-              </div>
-              <div className={`flex items-center space-x-1 border-2 px-2.5 py-1 rounded-xl text-xs font-bold shadow-[2px_2px_0px_0px_#000000] ${earnedBadgesCount > 4 ? "bg-[#B4F0D2] border-brand-border" : "bg-gray-100 border-gray-300 opacity-45"}`}>
-                <span>🎣 Hunter</span>
-              </div>
+              {[
+                ["badge-cyber-defender", "Beginner Master", "bg-[#FFE696]"],
+                ["badge-intermediate-defender", "Intermediate Master", "bg-[#B4E0FA]"],
+                ["badge-advanced-specialist", "Advanced Master", "bg-[#D6C8FF]"],
+                ["badge-simulation-analyst", "Simulation Defender", "bg-[#B4F0D2]"],
+              ].map(([badgeId, label, color]) => (
+                <div key={badgeId} className={`flex items-center space-x-1 border-2 px-2.5 py-1 rounded-xl text-xs font-bold shadow-[2px_2px_0px_0px_#000000] ${earnedBadgeIds.has(badgeId) ? `${color} border-brand-border` : "bg-gray-100 border-gray-300 opacity-45"}`}>
+                  <span>🛡️ {label}</span>
+                </div>
+              ))}
             </div>
             <NeoButton variant="secondary" size="sm" onClick={() => onNavigate("/badges")} className="w-full text-xs font-bold">
               Buka Galeri Lencana
