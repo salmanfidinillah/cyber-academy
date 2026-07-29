@@ -1,5 +1,22 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { Shield, Sparkles, BookOpen, Flame, Award, ChevronRight, CheckCircle, Clock, TrendingUp, RefreshCw } from "lucide-react";
+import {
+  Award,
+  BookOpen,
+  BrainCircuit,
+  CheckCircle,
+  ChevronRight,
+  Clock,
+  Flame,
+  GraduationCap,
+  Medal,
+  RefreshCw,
+  Route,
+  Shield,
+  Sparkles,
+  Target,
+  TrendingUp,
+  Trophy,
+} from "lucide-react";
 import { NeoButton } from "./NeoButton";
 import { NeoCard } from "./NeoCard";
 import { NeoBadge } from "./NeoBadge";
@@ -14,6 +31,76 @@ interface DashboardProps {
   onLogout: () => void;
   onNavigate: (route: string) => void;
 }
+
+interface DashboardStatCardProps {
+  accentClass: string;
+  icon: React.ReactNode;
+  label: string;
+  value: React.ReactNode;
+  helper: string;
+}
+
+const DashboardStatCard: React.FC<DashboardStatCardProps> = ({
+  accentClass,
+  icon,
+  label,
+  value,
+  helper,
+}) => (
+  <article
+    className={`${accentClass} group min-w-0 rounded-2xl border-3 border-brand-border p-3.5 shadow-[3px_3px_0_0_#111111] transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 hover:shadow-[5px_5px_0_0_#111111] motion-reduce:transform-none motion-reduce:transition-none sm:p-4`}
+  >
+    <div className="flex items-start justify-between gap-2">
+      <span className="min-w-0 text-[11px] font-extrabold uppercase tracking-[0.1em] text-brand-muted sm:text-xs">
+        {label}
+      </span>
+      <span
+        className="flex size-8 shrink-0 items-center justify-center rounded-xl border-2 border-brand-border bg-white/80"
+        aria-hidden="true"
+      >
+        {icon}
+      </span>
+    </div>
+    <div className="mt-3 break-words font-heading text-2xl font-extrabold leading-none text-brand-text sm:text-3xl">
+      {value}
+    </div>
+    <p className="mt-2 text-[11px] font-bold leading-snug text-brand-muted sm:text-xs">{helper}</p>
+  </article>
+);
+
+interface DashboardProgressBarProps {
+  label: string;
+  value: number;
+  colorClass?: string;
+}
+
+const DashboardProgressBar: React.FC<DashboardProgressBarProps> = ({
+  label,
+  value,
+  colorClass = "bg-pastel-mint",
+}) => (
+  <div className="space-y-2">
+    <div className="flex items-center justify-between gap-3 text-xs font-bold sm:text-sm">
+      <span className="min-w-0 break-words text-brand-text">{label}</span>
+      <span className="shrink-0 rounded-full border-2 border-brand-border bg-white px-2 py-0.5 text-[11px]">
+        {value}%
+      </span>
+    </div>
+    <div
+      className="h-3.5 w-full overflow-hidden rounded-full border-2 border-brand-border bg-white p-0.5"
+      role="progressbar"
+      aria-label={`Progres ${label}`}
+      aria-valuemin={0}
+      aria-valuemax={100}
+      aria-valuenow={value}
+    >
+      <div
+        className={`h-full max-w-full rounded-full ${colorClass} transition-[width] duration-500 ease-out motion-reduce:transition-none`}
+        style={{ width: `${value}%` }}
+      />
+    </div>
+  </div>
+);
 
 export const Dashboard: React.FC<DashboardProps> = ({ currentUser: propUser, onNavigate }) => {
   const { currentUser: contextUser } = useUser();
@@ -158,9 +245,30 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser: propUser, onN
   // 2. SAFE CONDITIONAL RENDER AFTER ALL HOOKS HAVE BEEN EXECUTED
   if (!currentUser) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[350px] font-sans">
-        <TrendingUp className="w-8 h-8 text-pastel-mint animate-spin mb-2" />
-        <p className="text-xs text-brand-muted font-bold">Memuat profil Anda...</p>
+      <div
+        className="mx-auto w-full max-w-[1500px] space-y-4 py-6 font-sans"
+        role="status"
+        aria-live="polite"
+        aria-label="Memuat profil dan Dashboard"
+      >
+        <div className="rounded-[24px] border-4 border-brand-border bg-pastel-blue p-5 shadow-[5px_5px_0_0_#111111] sm:p-7">
+          <div className="flex items-center gap-4">
+            <div className="size-14 rounded-2xl border-3 border-brand-border bg-white/80" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className="h-5 w-2/3 max-w-sm rounded-lg bg-white/80" />
+              <div className="h-3.5 w-1/2 max-w-xs rounded-lg bg-white/60" />
+            </div>
+          </div>
+          <p className="mt-5 text-sm font-extrabold text-brand-muted">Menyiapkan Dashboard Anda...</p>
+        </div>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          {[0, 1, 2].map((item) => (
+            <div
+              key={item}
+              className="h-28 rounded-2xl border-3 border-brand-border bg-white/80 shadow-[3px_3px_0_0_#111111]"
+            />
+          ))}
+        </div>
       </div>
     );
   }
@@ -185,311 +293,466 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser: propUser, onN
     : [];
 
   const levelProgressXp = currentUser.totalXp % 100;
+  const pathProgressSummaries = catalogPaths.map((path) => ({
+    id: path.id,
+    title: path.title,
+    progress: userId ? (userProgress[`${userId}_path_${path.id}`]?.progressPercent || 0) : 0,
+  }));
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10 animate-fadeIn font-sans text-brand-text">
-      
-      {/* 1. WELCOME BANNER & STATS */}
-      <section className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        {/* Profile Card */}
-        <div className="lg:col-span-8 flex flex-col justify-between bg-pastel-mint border-4 border-brand-border rounded-[24px] p-6 sm:p-8 neo-shadow relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-white/20 rounded-full translate-x-10 -translate-y-10 border-4 border-brand-border" />
-          
-          <div className="space-y-4 relative z-10">
-            <div className="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+    <div className="mx-auto w-full max-w-[1500px] min-w-0 space-y-7 pb-8 pt-4 font-sans text-brand-text sm:space-y-9 sm:pb-10 sm:pt-6">
+      <section
+        className="relative isolate overflow-hidden rounded-[24px] border-4 border-brand-border bg-pastel-blue p-5 shadow-[5px_5px_0_0_#111111] animate-[fadeIn_420ms_cubic-bezier(0.16,1,0.3,1)_both] motion-reduce:animate-none sm:p-7 lg:p-8"
+        aria-labelledby="dashboard-welcome-title"
+      >
+        <div className="absolute -right-9 -top-10 size-32 rounded-full border-4 border-brand-border bg-pastel-yellow/80 sm:size-40" aria-hidden="true" />
+        <div className="absolute bottom-5 right-24 hidden size-12 rotate-12 rounded-xl border-3 border-brand-border bg-pastel-lavender lg:block" aria-hidden="true" />
+        <div className="relative z-10 grid min-w-0 gap-6 lg:grid-cols-[minmax(0,1fr)_17rem] lg:items-center">
+          <div className="min-w-0">
+            <div className="flex flex-wrap items-center gap-3">
               <img
                 src={currentUser.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(currentUser.displayName)}`}
-                alt={currentUser.displayName}
-                className="w-16 h-16 sm:w-20 sm:h-20 bg-white border-3 border-brand-border rounded-2xl neo-shadow-sm flex-shrink-0"
+                alt={`Foto profil ${currentUser.displayName}`}
+                className="size-14 shrink-0 rounded-2xl border-3 border-brand-border bg-white object-cover shadow-[3px_3px_0_0_#111111] sm:size-16"
               />
-              <div className="space-y-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl sm:text-3xl font-heading font-extrabold tracking-tight text-brand-text">
-                    Halo, {currentUser.displayName}!
-                  </h1>
-                  <NeoBadge bgColor="bg-pastel-yellow">Taruna Siber</NeoBadge>
-                </div>
-                <p className="text-xs sm:text-sm text-brand-muted font-semibold">
-                  Misi: <span className="text-brand-text font-bold">
-                    {currentUser.learningGoal === "protect_self" ? "Melindungi Akun & Data Pribadi" :
-                     currentUser.learningGoal === "career" ? "Persiapan Karir Profesional" : "Akademik & Kompetisi"}
-                  </span>
-                </p>
-                <div className="flex items-center space-x-2 text-xs text-brand-muted font-bold pt-0.5">
-                  <Clock className="w-4 h-4 text-brand-text" />
-                  <span>Komitmen Harian: {currentUser.studyTime === "5min" ? "5 Menit (Santai)" : currentUser.studyTime === "30min" ? "30 Menit (Intensif)" : "15 Menit (Fokus)"}</span>
-                </div>
+              <div className="min-w-0">
+                <NeoBadge bgColor="bg-white" className="mb-1.5">Dashboard Taruna</NeoBadge>
+                <h1 id="dashboard-welcome-title" className="break-words font-heading text-2xl font-extrabold leading-tight tracking-tight sm:text-3xl lg:text-4xl">
+                  Selamat datang kembali, {currentUser.displayName}
+                </h1>
               </div>
             </div>
 
-            <div className="text-xs sm:text-sm text-brand-text/80 font-medium leading-relaxed max-w-xl">
+            <p className="mt-4 max-w-2xl text-sm font-semibold leading-relaxed text-brand-muted sm:text-base">
+              Lanjutkan perjalanan belajarmu dan tingkatkan kesiapan keamanan siber melalui langkah kecil yang konsisten.
+            </p>
+
+            <div className="mt-4 max-w-2xl rounded-2xl border-2 border-brand-border bg-white/80 p-3.5 text-sm font-semibold leading-relaxed shadow-[2px_2px_0_0_#111111]">
+              <span className="font-heading font-extrabold">Rekomendasi berikutnya: </span>
               {continueTarget ? (
                 <span>
-                  Hari ini Anda disarankan melanjutkan ke materi <span className="font-heading font-bold underline decoration-pastel-yellow decoration-3">{continueTarget.lesson.title}</span> pada kelas <span className="font-bold">{continueTarget.course.title}</span> untuk memperkuat pemahaman siber defensif Anda.
+                  lanjutkan “{continueTarget.lesson.title}” di kelas {continueTarget.course.title}.
                 </span>
               ) : activePath ? (
                 <span>
-                  Selamat! Anda telah menyelesaikan seluruh materi pelajaran yang tersedia di Jalur Pembelajaran <span className="font-bold underline">{activePath.title}</span>. Ambil kuis kelulusan di dalam modul kelas untuk melengkapi pencapaianmu!
+                  tinjau jalur {activePath.title} dan selesaikan kuis kelulusan yang tersedia.
                 </span>
               ) : (
-                <span>Katalog materi pembelajaran dari Cloud Firestore belum dimuat.</span>
+                <span>mulai dari jalur belajar yang paling sesuai dengan tujuanmu.</span>
               )}
             </div>
+
+            <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <NeoButton
+                type="button"
+                variant="primary"
+                size="sm"
+                onClick={handleContinueLearning}
+                className="w-full gap-2 sm:w-auto"
+              >
+                <BookOpen className="size-4" aria-hidden="true" />
+                <span>{continueTarget ? "Lanjutkan Belajar" : "Tinjau Jalur Belajar"}</span>
+                <ChevronRight className="size-4" aria-hidden="true" />
+              </NeoButton>
+              <NeoButton
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => onNavigate("/progress")}
+                className="w-full gap-2 sm:w-auto"
+              >
+                <TrendingUp className="size-4" aria-hidden="true" />
+                <span>Lihat Progress</span>
+              </NeoButton>
+            </div>
           </div>
 
-          <div className="flex flex-wrap gap-3 pt-6 relative z-10 border-t-2 border-brand-border/20 mt-6">
-            <NeoButton variant="primary" size="sm" onClick={handleContinueLearning} className="font-bold flex items-center space-x-2">
-              <span>{continueTarget ? "Lanjutkan Belajar" : "Tinjau Jalur Belajar"}</span>
-              <ChevronRight className="w-4 h-4" />
-            </NeoButton>
-            <NeoButton variant="secondary" size="sm" onClick={() => onNavigate("/progress")} className="font-bold flex items-center space-x-1.5">
-              <TrendingUp className="w-4 h-4" />
-              <span>Analitik Progres</span>
-            </NeoButton>
-          </div>
-        </div>
-
-        {/* Dynamic Stats Grid */}
-        <div className="lg:col-span-4 grid grid-cols-3 lg:grid-cols-1 gap-4">
-          {/* Level Card */}
-          <div className="bg-pastel-yellow border-3 border-brand-border rounded-2xl p-4 flex flex-col justify-between neo-shadow-sm select-none">
-            <span className="text-xs font-heading font-extrabold uppercase text-brand-muted tracking-wider">Level Aktif</span>
-            <div className="flex items-baseline space-x-1.5">
-              <span className="text-3xl sm:text-4xl font-heading font-extrabold text-brand-text">Lvl {currentUser.currentLevel}</span>
-              <span className="text-xs font-bold text-brand-muted">/ 10</span>
+          <div className="hidden rounded-[20px] border-3 border-brand-border bg-pastel-mint p-5 shadow-[4px_4px_0_0_#111111] lg:block">
+            <div className="flex items-center justify-between">
+              <Shield className="size-10" aria-hidden="true" />
+              <NeoBadge bgColor="bg-pastel-yellow" size="sm">Misi Aktif</NeoBadge>
             </div>
-            <div className="w-full bg-white h-2.5 border-2 border-brand-border rounded-full overflow-hidden p-0.5 mt-2">
-              <div className="h-full bg-brand-text rounded-full transition-all duration-300" style={{ width: `${levelProgressXp}%` }} />
+            <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.12em] text-brand-muted">Fokus belajar</p>
+            <p className="mt-1 font-heading text-lg font-extrabold">
+              {currentUser.learningGoal === "protect_self"
+                ? "Lindungi akun & data"
+                : currentUser.learningGoal === "career"
+                  ? "Siapkan karier siber"
+                  : "Akademik & kompetisi"}
+            </p>
+            <div className="mt-4 flex items-center gap-2 border-t-2 border-brand-border/20 pt-3 text-xs font-bold">
+              <Clock className="size-4" aria-hidden="true" />
+              <span>
+                {currentUser.studyTime === "5min"
+                  ? "5 menit per hari"
+                  : currentUser.studyTime === "30min"
+                    ? "30 menit per hari"
+                    : "15 menit per hari"}
+              </span>
             </div>
-          </div>
-
-          {/* XP Card */}
-          <div className="bg-pastel-blue border-3 border-brand-border rounded-2xl p-4 flex flex-col justify-between neo-shadow-sm select-none">
-            <span className="text-xs font-heading font-extrabold uppercase text-brand-muted tracking-wider">Total XP</span>
-            <div className="flex items-baseline space-x-1.5">
-              <span className="text-3xl sm:text-4xl font-heading font-extrabold text-brand-text">{currentUser.totalXp}</span>
-              <span className="text-xs font-bold text-brand-muted">XP</span>
-            </div>
-            <span className="text-[10px] sm:text-xs font-bold text-brand-muted mt-2 block">Pencapaian belajar terkumpul</span>
-          </div>
-
-          {/* Streak Card */}
-          <div className="bg-[#FFFDF8] border-3 border-brand-border rounded-2xl p-4 flex flex-col justify-between neo-shadow-sm select-none">
-            <div className="flex items-center space-x-1">
-              <Flame className="w-4 h-4 text-brand-text fill-pastel-yellow" />
-              <span className="text-xs font-heading font-extrabold uppercase text-brand-muted tracking-wider">Streak</span>
-            </div>
-            <div className="flex items-baseline space-x-1.5">
-              <span className="text-3xl sm:text-4xl font-heading font-extrabold text-brand-text">{currentUser.learningStreak}</span>
-              <span className="text-xs font-bold text-brand-muted">Hari</span>
-            </div>
-            <span className="text-[10px] sm:text-xs font-bold text-brand-muted mt-2 block">Jaga nyala api belajarmu!</span>
           </div>
         </div>
       </section>
 
-      {/* 2. CORE PATHWAY (INTEGRATED ROADMAP) */}
-      <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div className="lg:col-span-2 space-y-6">
-          <div className="flex items-center justify-between border-b-3 border-brand-border pb-3">
-            <div className="flex items-center space-x-2.5">
-              <BookOpen className="w-5 h-5 text-brand-text" />
-              <h2 className="text-xl sm:text-2xl font-heading font-bold text-brand-text">Misi Pembelajaran Aktif</h2>
+      <section
+        className="animate-[fadeIn_460ms_80ms_cubic-bezier(0.16,1,0.3,1)_both] motion-reduce:animate-none"
+        aria-labelledby="dashboard-stats-title"
+      >
+        <div className="mb-4 flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-brand-muted">Ringkasan hari ini</p>
+            <h2 id="dashboard-stats-title" className="font-heading text-xl font-extrabold sm:text-2xl">Progress dalam sekali lihat</h2>
+          </div>
+          <p className="text-xs font-bold text-brand-muted">Seluruh angka berasal dari data akunmu.</p>
+        </div>
+        <div className="grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 xl:grid-cols-6">
+          <DashboardStatCard
+            accentClass="bg-pastel-blue"
+            icon={<Trophy className="size-4" />}
+            label="Total XP"
+            value={<>{currentUser.totalXp}<span className="ml-1 text-sm">XP</span></>}
+            helper="XP terkumpul"
+          />
+          <DashboardStatCard
+            accentClass="bg-pastel-yellow"
+            icon={<TrendingUp className="size-4" />}
+            label="Level"
+            value={`Lvl ${currentUser.currentLevel}`}
+            helper={`${levelProgressXp}% ke level berikutnya`}
+          />
+          <DashboardStatCard
+            accentClass="bg-pastel-yellow/60"
+            icon={<Flame className="size-4 fill-pastel-peach" />}
+            label="Streak"
+            value={<>{currentUser.learningStreak}<span className="ml-1 text-sm">hari</span></>}
+            helper="Jaga konsistensi"
+          />
+          <DashboardStatCard
+            accentClass="bg-pastel-mint"
+            icon={<Route className="size-4" />}
+            label="Jalur aktif"
+            value={`${activePathProgress}%`}
+            helper={activePath?.title || "Belum dimulai"}
+          />
+          <DashboardStatCard
+            accentClass="bg-pastel-lavender"
+            icon={<Medal className="size-4" />}
+            label="Badge"
+            value={`${earnedBadgesCount}/4`}
+            helper="Milestone diraih"
+          />
+          <DashboardStatCard
+            accentClass="bg-pastel-peach"
+            icon={<GraduationCap className="size-4" />}
+            label="Sertifikat"
+            value={hasCert ? "Aktif" : "Belum"}
+            helper={hasCert ? "Siap ditinjau" : "Selesaikan jalur"}
+          />
+        </div>
+      </section>
+
+      <section
+        className="grid min-w-0 gap-6 animate-[fadeIn_500ms_140ms_cubic-bezier(0.16,1,0.3,1)_both] motion-reduce:animate-none lg:grid-cols-[minmax(0,1.45fr)_minmax(17rem,0.55fr)]"
+        aria-labelledby="dashboard-learning-title"
+      >
+        <div className="min-w-0 space-y-4">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-brand-muted">Lanjutkan pembelajaran</p>
+              <h2 id="dashboard-learning-title" className="font-heading text-xl font-extrabold sm:text-2xl">Misi pembelajaran aktif</h2>
             </div>
             <NeoBadge bgColor="bg-pastel-mint">Rekomendasi Kurikulum</NeoBadge>
           </div>
 
           {loading ? (
-            <NeoCard bgColor="bg-white" className="p-8 text-center space-y-3">
-              <RefreshCw className="w-6 h-6 animate-spin mx-auto text-brand-muted" />
-              <p className="text-xs text-brand-muted font-bold">Memuat katalog dari Cloud Firestore...</p>
-            </NeoCard>
-          ) : error || !activePath ? (
-            <NeoCard bgColor="bg-pastel-peach/30" className="p-6 text-center space-y-4">
-              <h3 className="font-heading font-extrabold text-lg text-brand-text">Katalog Pembelajaran Belum Tersedia</h3>
-              <p className="text-xs text-brand-muted font-medium max-w-md mx-auto">
-                {error || "Belum ada Learning Path yang dipublikasikan di Firestore."}
-              </p>
-              <div className="flex justify-center gap-3">
-                <NeoButton variant="secondary" size="sm" onClick={loadCatalog} className="font-bold flex items-center space-x-1">
-                  <RefreshCw className="w-3.5 h-3.5" />
-                  <span>Coba Lagi</span>
-                </NeoButton>
-                <NeoButton variant="primary" size="sm" onClick={() => onNavigate("/learn/paths")} className="font-bold">
-                  Jelajahi Katalog
-                </NeoButton>
+            <NeoCard
+              bgColor="bg-white"
+              className="space-y-5"
+              role="status"
+              aria-live="polite"
+              aria-label="Memuat katalog pembelajaran"
+            >
+              <div className="flex items-center gap-3">
+                <RefreshCw className="size-5 animate-spin motion-reduce:animate-none" aria-hidden="true" />
+                <p className="font-heading font-extrabold">Menyiapkan misi belajarmu...</p>
+              </div>
+              <div className="h-5 w-2/3 rounded-lg bg-pastel-blue/70" />
+              <div className="h-3.5 w-full rounded-full bg-pastel-gray/80" />
+              <div className="grid gap-3 sm:grid-cols-2">
+                <div className="h-16 rounded-xl border-2 border-brand-border bg-brand-surface" />
+                <div className="h-16 rounded-xl border-2 border-brand-border bg-brand-surface" />
               </div>
             </NeoCard>
+          ) : error ? (
+            <NeoCard bgColor="bg-pastel-red/35" className="space-y-4 text-center" role="alert">
+              <div className="mx-auto flex size-11 items-center justify-center rounded-2xl border-2 border-brand-border bg-white">
+                <RefreshCw className="size-5" aria-hidden="true" />
+              </div>
+              <div>
+                <h3 className="font-heading text-lg font-extrabold">Katalog belum berhasil dimuat</h3>
+                <p className="mx-auto mt-1 max-w-md text-sm font-semibold text-brand-muted">{error}</p>
+              </div>
+              <NeoButton type="button" variant="secondary" size="sm" onClick={loadCatalog}>
+                Coba Lagi
+              </NeoButton>
+            </NeoCard>
+          ) : !activePath ? (
+            <NeoCard bgColor="bg-pastel-yellow/35" className="space-y-4 text-center">
+              <div className="mx-auto flex size-12 items-center justify-center rounded-2xl border-2 border-brand-border bg-white shadow-[2px_2px_0_0_#111111]">
+                <BookOpen className="size-6" aria-hidden="true" />
+              </div>
+              <div>
+                <h3 className="font-heading text-lg font-extrabold">Mulai perjalanan siber pertamamu</h3>
+                <p className="mx-auto mt-1 max-w-md text-sm font-semibold text-brand-muted">
+                  Belum ada jalur aktif di Dashboard. Jelajahi katalog untuk memilih langkah pertama.
+                </p>
+              </div>
+              <NeoButton type="button" variant="primary" size="sm" onClick={() => onNavigate("/learn/paths")}>
+                Jelajahi Jalur Belajar
+              </NeoButton>
+            </NeoCard>
           ) : (
-            <div className="space-y-4">
-              <NeoCard bgColor="bg-white" className="p-5 sm:p-6 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-brand-border/10 pb-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center space-x-2">
-                      <span className="text-lg">🛡️</span>
-                      <h3 className="font-heading font-extrabold text-base sm:text-lg text-brand-text">
-                        {activePath.title}
-                      </h3>
-                    </div>
-                    <p className="text-xs text-brand-muted font-semibold max-w-lg">
-                      {activePath.shortDescription || activePath.description || "Tingkat pembelajaran siber defensif."}
-                    </p>
+            <NeoCard bgColor="bg-white" className="min-w-0 space-y-5">
+              <div className="flex min-w-0 flex-col gap-4 border-b-2 border-brand-border/15 pb-5 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-xl border-2 border-brand-border bg-pastel-mint" aria-hidden="true">
+                      <Shield className="size-5" />
+                    </span>
+                    <h3 className="min-w-0 break-words font-heading text-lg font-extrabold sm:text-xl">{activePath.title}</h3>
                   </div>
-
-                  <div className="shrink-0">
-                    <NeoButton variant="primary" size="sm" onClick={() => onNavigate(`/learn/paths/${activePath.id}`)} className="text-xs font-bold font-heading">
-                      Buka Jalur Belajar
-                    </NeoButton>
-                  </div>
+                  <p className="mt-2 max-w-2xl break-words text-sm font-semibold leading-relaxed text-brand-muted">
+                    {activePath.shortDescription || activePath.description || "Tingkat pembelajaran siber defensif."}
+                  </p>
                 </div>
+                <NeoButton
+                  type="button"
+                  variant="primary"
+                  size="sm"
+                  onClick={() => onNavigate(`/learn/paths/${activePath.id}`)}
+                  className="w-full shrink-0 sm:w-auto"
+                >
+                  Buka Jalur
+                </NeoButton>
+              </div>
 
-                {/* Progress bar info */}
-                <div className="space-y-2">
-                  <div className="flex justify-between text-xs font-bold">
-                    <span className="text-brand-muted">Progres Keseluruhan Jalur</span>
-                    <span>{activePathProgress}% Selesai</span>
-                  </div>
-                  <div className="w-full bg-brand-surface h-3.5 border-2 border-brand-border rounded-full overflow-hidden p-0.5">
-                    <div className="h-full bg-pastel-mint rounded-full transition-all duration-300" style={{ width: `${activePathProgress}%` }} />
-                  </div>
-                </div>
+              <DashboardProgressBar label={`Jalur ${activePath.title}`} value={activePathProgress} />
 
-                {/* Courses list overview inside path */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
+              {activePathCoursesProgress.length > 0 ? (
+                <div className="grid min-w-0 gap-3 sm:grid-cols-2">
                   {activePathCoursesProgress.map((course) => (
-                    <div
+                    <button
+                      type="button"
                       key={course.id}
                       onClick={() => onNavigate(`/learn/courses/${course.slug}`)}
-                      className={`p-3 rounded-xl border-2 border-brand-border text-left cursor-pointer transition-all select-none flex items-center justify-between ${course.completed ? "bg-pastel-mint/10 hover:bg-pastel-mint/20" : "bg-[#FFFDF8] hover:translate-y-[-1px] hover:shadow-[3px_3px_0_#111111]"}`}
+                      className={`flex min-w-0 items-center justify-between gap-3 rounded-xl border-2 border-brand-border p-3 text-left outline-none transition-[transform,box-shadow,background-color] duration-200 hover:-translate-y-0.5 hover:shadow-[3px_3px_0_0_#111111] focus-visible:ring-4 focus-visible:ring-pastel-blue focus-visible:ring-offset-2 motion-reduce:transform-none motion-reduce:transition-none ${
+                        course.completed ? "bg-pastel-mint/30" : "bg-brand-surface"
+                      }`}
                     >
-                      <div className="truncate max-w-[80%] pr-1">
-                        <h4 className="font-heading font-bold text-xs sm:text-sm text-brand-text truncate">{course.title}</h4>
-                        <p className="text-[10px] text-brand-muted font-bold">{course.percent}% selesai • {course.lessonCount} materi</p>
-                      </div>
+                      <span className="min-w-0">
+                        <span className="block break-words font-heading text-sm font-extrabold">{course.title}</span>
+                        <span className="mt-1 block text-xs font-bold text-brand-muted">
+                          {course.percent}% selesai · {course.lessonCount} materi
+                        </span>
+                      </span>
                       {course.completed ? (
-                        <CheckCircle className="w-4 h-4 text-pastel-mint shrink-0 fill-brand-text" />
+                        <CheckCircle className="size-5 shrink-0 fill-pastel-mint" aria-label="Selesai" />
                       ) : (
-                        <ChevronRight className="w-3.5 h-3.5 text-brand-muted shrink-0" />
+                        <ChevronRight className="size-4 shrink-0" aria-hidden="true" />
                       )}
-                    </div>
+                    </button>
                   ))}
                 </div>
-              </NeoCard>
-            </div>
+              ) : (
+                <div className="rounded-2xl border-2 border-dashed border-brand-border bg-pastel-yellow/25 p-4 text-center">
+                  <p className="text-sm font-bold">Materi pada jalur ini belum tersedia.</p>
+                  <p className="mt-1 text-xs font-semibold text-brand-muted">Cek kembali katalog pembelajaran secara berkala.</p>
+                </div>
+              )}
+            </NeoCard>
           )}
         </div>
 
-        {/* Sidebar widgets */}
-        <div className="space-y-6">
-          {/* AI Tutor Widget */}
-          <NeoCard bgColor="bg-pastel-mint/20" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <Sparkles className="w-5 h-5 text-brand-text fill-pastel-mint" />
-                <h3 className="font-heading font-bold text-base text-brand-text">Asisten AI Tutor</h3>
-              </div>
-              <NeoBadge bgColor="bg-pastel-mint" size="sm">Online</NeoBadge>
+        <aside className="min-w-0 space-y-4" aria-label="Bantuan belajar">
+          <NeoCard
+            bgColor="bg-pastel-lavender"
+            className="space-y-4 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border-2 border-brand-border bg-white" aria-hidden="true">
+                <BrainCircuit className="size-5" />
+              </span>
+              <NeoBadge bgColor="bg-white" size="sm">AI Insight</NeoBadge>
             </div>
-            <p className="text-xs text-brand-muted font-semibold leading-relaxed">
-              Diskusikan materi pelajaran, cari tahu cara menghindari phishing, atau mintalah asisten remedial siber defenfif kapan saja.
-            </p>
-            <NeoButton variant="mint" size="sm" onClick={() => onNavigate("/ai-tutor")} className="w-full text-xs font-bold">
-              Buka AI Tutor
-            </NeoButton>
-          </NeoCard>
-
-          {/* AI Learning Insight Widget */}
-          <NeoCard bgColor="bg-pastel-peach/10" className="space-y-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2.5">
-                <TrendingUp className="w-5 h-5 text-brand-text" />
-                <h3 className="font-heading font-bold text-base text-brand-text">AI Learning Insight</h3>
-              </div>
-              <NeoBadge bgColor="bg-pastel-peach" size="sm">Analisis</NeoBadge>
+            <div>
+              <h3 className="font-heading text-lg font-extrabold">Pahami pola belajarmu</h3>
+              <p className="mt-1 text-sm font-semibold leading-relaxed text-brand-muted">
+                Lihat analisis riwayat kuis dan simulasi untuk menemukan fokus belajar berikutnya.
+              </p>
             </div>
-            <p className="text-xs text-brand-muted font-semibold leading-relaxed">
-              Analisis cerdas berdasarkan riwayat kuis dan aktivitas simulasi untuk menemukan area penguasaan dan rekomendasi belajar.
-            </p>
-            <NeoButton variant="secondary" size="sm" onClick={() => onNavigate("/progress/insight")} className="w-full text-xs font-bold">
+            <NeoButton
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => onNavigate("/progress/insight")}
+              className="w-full"
+            >
               Lihat Insight Belajar
             </NeoButton>
           </NeoCard>
 
-          {/* Achievement Widget */}
-          <NeoCard bgColor="bg-[#FFFDF8]" className="space-y-4">
-            <div className="flex items-center space-x-2.5">
-              <Award className="w-5 h-5 text-brand-text" />
-              <h3 className="font-heading font-bold text-base text-brand-text">Lencana Pertahanan</h3>
+          <NeoCard
+            bgColor="bg-pastel-mint/55"
+            className="space-y-4 transition-[transform,box-shadow] duration-200 hover:-translate-y-0.5 motion-reduce:transform-none motion-reduce:transition-none"
+          >
+            <div className="flex items-center gap-3">
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border-2 border-brand-border bg-white" aria-hidden="true">
+                <Sparkles className="size-5" />
+              </span>
+              <div>
+                <NeoBadge bgColor="bg-pastel-mint" size="sm">Online</NeoBadge>
+                <h3 className="mt-1 font-heading text-lg font-extrabold">AI Tutor</h3>
+              </div>
             </div>
-            <p className="text-xs text-brand-muted font-semibold">
-              Anda telah meraih <span className="font-bold text-black">{earnedBadgesCount} / 4</span> lencana milestone yang dievaluasi secara aman di server.
+            <p className="text-sm font-semibold leading-relaxed text-brand-muted">
+              Tanyakan materi yang belum jelas dan lanjutkan diskusi belajarmu kapan saja.
             </p>
-            <div className="flex flex-wrap gap-2 pt-1">
-              {[
-                ["badge-cyber-defender", "Beginner Master", "bg-[#FFE696]"],
-                ["badge-intermediate-defender", "Intermediate Master", "bg-[#B4E0FA]"],
-                ["badge-advanced-specialist", "Advanced Master", "bg-[#D6C8FF]"],
-                ["badge-simulation-analyst", "Simulation Defender", "bg-[#B4F0D2]"],
-              ].map(([badgeId, label, color]) => (
-                <div key={badgeId} className={`flex items-center space-x-1 border-2 px-2.5 py-1 rounded-xl text-xs font-bold shadow-[2px_2px_0px_0px_#000000] ${earnedBadgeIds.has(badgeId) ? `${color} border-brand-border` : "bg-gray-100 border-gray-300 opacity-45"}`}>
-                  <span>🛡️ {label}</span>
+            <NeoButton type="button" variant="mint" size="sm" onClick={() => onNavigate("/ai-tutor")} className="w-full">
+              Buka AI Tutor
+            </NeoButton>
+          </NeoCard>
+        </aside>
+      </section>
+
+      <section
+        className="grid min-w-0 gap-6 animate-[fadeIn_520ms_200ms_cubic-bezier(0.16,1,0.3,1)_both] motion-reduce:animate-none lg:grid-cols-2"
+        aria-labelledby="dashboard-path-progress-title"
+      >
+        <NeoCard bgColor="bg-pastel-mint/25" className="min-w-0 space-y-5">
+          <div className="flex items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-brand-muted">Peta perkembangan</p>
+              <h2 id="dashboard-path-progress-title" className="font-heading text-xl font-extrabold">Progress jalur belajar</h2>
+            </div>
+            <Route className="size-6 shrink-0" aria-hidden="true" />
+          </div>
+          {loading ? (
+            <div className="space-y-4" role="status" aria-label="Memuat progress jalur">
+              {[0, 1, 2].map((item) => (
+                <div key={item} className="space-y-2">
+                  <div className="h-4 w-1/3 rounded bg-pastel-gray/80" />
+                  <div className="h-3.5 w-full rounded-full bg-white/80" />
                 </div>
               ))}
             </div>
-            <NeoButton variant="secondary" size="sm" onClick={() => onNavigate("/badges")} className="w-full text-xs font-bold">
-              Buka Galeri Lencana
-            </NeoButton>
-          </NeoCard>
-        </div>
-      </section>
-
-      {/* 3. SIMULATIONS & CERTIFICATE OVERVIEWS */}
-      <section className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Phishing Simulation */}
-        <NeoCard bgColor="bg-pastel-yellow/30" className="flex flex-col justify-between space-y-4 border-3">
-          <div className="space-y-3">
-            <div className="inline-flex items-center space-x-2 bg-pastel-yellow px-2.5 py-0.5 rounded-full border-2 border-brand-border text-xs font-bold">
-              <span>Simulasi Praktis</span>
+          ) : pathProgressSummaries.length > 0 ? (
+            <div className="space-y-4">
+              {pathProgressSummaries.map((path, index) => (
+                <DashboardProgressBar
+                  key={path.id}
+                  label={path.title}
+                  value={path.progress}
+                  colorClass={["bg-pastel-mint", "bg-pastel-blue", "bg-pastel-lavender"][index % 3]}
+                />
+              ))}
             </div>
-            <h3 className="font-heading font-extrabold text-lg text-brand-text">
-              Phishing Sandbox Simulator
-            </h3>
-            <p className="text-xs sm:text-sm text-brand-muted font-medium leading-relaxed">
-              Latih refleks pertahanan digitalmu dengan membedakan email resmi dan email penipuan secara interaktif, tanpa menanggung risiko kehilangan data dunia nyata!
+          ) : (
+            <div className="rounded-2xl border-2 border-dashed border-brand-border bg-white p-4 text-center">
+              <p className="font-heading font-extrabold">Belum ada progress untuk ditampilkan</p>
+              <p className="mt-1 text-sm font-semibold text-brand-muted">Mulai satu materi untuk melihat perkembanganmu di sini.</p>
+              <NeoButton type="button" variant="primary" size="sm" onClick={() => onNavigate("/learn/paths")} className="mt-4">
+                Mulai Belajar
+              </NeoButton>
+            </div>
+          )}
+        </NeoCard>
+
+        <NeoCard bgColor="bg-pastel-yellow/35" className="flex min-w-0 flex-col justify-between gap-5">
+          <div>
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-brand-muted">Tantangan berikutnya</p>
+                <h2 className="font-heading text-xl font-extrabold">Phishing Sandbox Simulator</h2>
+              </div>
+              <Target className="size-7 shrink-0" aria-hidden="true" />
+            </div>
+            <p className="mt-3 text-sm font-semibold leading-relaxed text-brand-muted">
+              Latih refleks pertahanan digital dengan membedakan email resmi dan pesan penipuan dalam lingkungan aman.
             </p>
           </div>
-          <div className="pt-4 border-t border-brand-border/20 flex justify-between items-center">
-            <span className="text-xs text-brand-muted font-bold">Tingkat: Pemula (Gratis)</span>
-            <NeoButton variant="primary" size="sm" onClick={() => onNavigate("/simulations")} className="text-xs font-bold">
+          <div className="flex flex-col gap-3 border-t-2 border-brand-border/15 pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <span className="text-xs font-extrabold text-brand-muted">Latihan praktis tersedia</span>
+            <NeoButton type="button" variant="yellow" size="sm" onClick={() => onNavigate("/simulations")} className="w-full sm:w-auto">
               Mulai Simulasi
             </NeoButton>
           </div>
         </NeoCard>
+      </section>
 
-        {/* Smart Certificates */}
-        <NeoCard bgColor="bg-pastel-blue/20" className="flex flex-col justify-between space-y-4 border-3">
-          <div className="space-y-3">
-            <div className="inline-flex items-center space-x-2 bg-pastel-blue px-2.5 py-0.5 rounded-full border-2 border-brand-border text-xs font-bold">
-              <span>Sertifikasi Resmi</span>
+      <section
+        className="grid min-w-0 gap-6 animate-[fadeIn_540ms_260ms_cubic-bezier(0.16,1,0.3,1)_both] motion-reduce:animate-none lg:grid-cols-[minmax(0,1.2fr)_minmax(0,0.8fr)]"
+        aria-labelledby="dashboard-achievement-title"
+      >
+        <NeoCard bgColor="bg-white" className="min-w-0 space-y-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-[0.14em] text-brand-muted">Milestone utama</p>
+              <h2 id="dashboard-achievement-title" className="font-heading text-xl font-extrabold">Badge pertahananmu</h2>
             </div>
-            <h3 className="font-heading font-extrabold text-lg text-brand-text">
-              Sertifikat Kelulusan Siber
-            </h3>
-            <p className="text-xs sm:text-sm text-brand-muted font-medium leading-relaxed">
-              Setelah menyelesaikan seluruh materi pelajaran dan melampaui skor minimal kuis akhir, dapatkan sertifikat digital terverifikasi untuk profil profesional Anda.
+            <NeoBadge bgColor="bg-pastel-lavender">{earnedBadgesCount} dari 4 diraih</NeoBadge>
+          </div>
+          <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+            {[
+              ["badge-cyber-defender", "Beginner Master", "bg-pastel-yellow"],
+              ["badge-intermediate-defender", "Intermediate Master", "bg-pastel-blue"],
+              ["badge-advanced-specialist", "Advanced Master", "bg-pastel-lavender"],
+              ["badge-simulation-analyst", "Simulation Defender", "bg-pastel-mint"],
+            ].map(([badgeId, label, color]) => {
+              const isEarned = earnedBadgeIds.has(badgeId);
+              return (
+                <div
+                  key={badgeId}
+                  className={`flex min-w-0 items-center gap-3 rounded-xl border-2 border-brand-border p-3 ${
+                    isEarned ? `${color} shadow-[2px_2px_0_0_#111111]` : "bg-brand-surface"
+                  }`}
+                >
+                  <span className={`flex size-9 shrink-0 items-center justify-center rounded-xl border-2 border-brand-border ${isEarned ? "bg-white" : "bg-pastel-gray"}`} aria-hidden="true">
+                    {isEarned ? <Award className="size-5" /> : <Medal className="size-5 text-brand-muted" />}
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block break-words font-heading text-sm font-extrabold">{label}</span>
+                    <span className="block text-xs font-bold text-brand-muted">{isEarned ? "Sudah diraih" : "Belum diraih"}</span>
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+          {earnedBadgesCount === 0 && (
+            <div className="rounded-xl border-2 border-dashed border-brand-border bg-pastel-lavender/20 p-3 text-sm font-semibold text-brand-muted">
+              Selesaikan milestone jalur atau simulasi pertamamu untuk membuka badge.
+            </div>
+          )}
+          <NeoButton type="button" variant="secondary" size="sm" onClick={() => onNavigate("/badges")} className="w-full sm:w-auto">
+            Buka Galeri Badge
+          </NeoButton>
+        </NeoCard>
+
+        <NeoCard bgColor="bg-pastel-peach/40" className="flex min-w-0 flex-col justify-between gap-5">
+          <div>
+            <span className="flex size-11 items-center justify-center rounded-2xl border-2 border-brand-border bg-white shadow-[2px_2px_0_0_#111111]" aria-hidden="true">
+              <GraduationCap className="size-6" />
+            </span>
+            <p className="mt-4 text-xs font-extrabold uppercase tracking-[0.14em] text-brand-muted">Sertifikasi</p>
+            <h2 className="font-heading text-xl font-extrabold">Sertifikat kelulusan siber</h2>
+            <p className="mt-2 text-sm font-semibold leading-relaxed text-brand-muted">
+              {hasCert
+                ? "Sertifikat aktifmu siap ditinjau dan digunakan untuk menunjukkan pencapaian belajar."
+                : "Selesaikan materi dan kuis akhir jalur untuk membuka sertifikat digital terverifikasi."}
             </p>
           </div>
-          <div className="pt-4 border-t border-brand-border/20 flex justify-between items-center">
-            <span className="text-xs text-brand-muted font-bold">{hasCert ? "Sertifikasi Aktif" : "Belum Tersedia"}</span>
-            <NeoButton
-              variant="primary"
-              size="sm"
-              onClick={() => onNavigate("/certificates")}
-              className="text-xs font-bold"
-            >
-              {hasCert ? "Tinjau Sertifikat" : "Cek Kelayakan"}
-            </NeoButton>
-          </div>
+          <NeoButton type="button" variant="peach" size="sm" onClick={() => onNavigate("/certificates")} className="w-full">
+            {hasCert ? "Tinjau Sertifikat" : "Cek Kelayakan Sertifikat"}
+          </NeoButton>
         </NeoCard>
       </section>
     </div>
