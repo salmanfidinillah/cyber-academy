@@ -17,6 +17,7 @@ describe("AI configuration", () => {
       maxInputChars: 4_000,
       maxHistoryMessages: 12,
       maxOutputTokens: 800,
+      insightMaxOutputTokens: 1_400,
     });
   });
 
@@ -38,10 +39,25 @@ describe("AI configuration", () => {
       GOOGLE_CLOUD_PROJECT: "cyber-academy-test",
       AI_REQUEST_TIMEOUT_MS: "NaN",
       AI_MAX_OUTPUT_TOKENS: "-1",
+      AI_INSIGHT_MAX_OUTPUT_TOKENS: "not-a-number",
     });
     expect(state.configured).toBe(false);
     expect(state.errors.join(" ")).toContain("AI_REQUEST_TIMEOUT_MS");
     expect(state.errors.join(" ")).toContain("AI_MAX_OUTPUT_TOKENS");
+    expect(state.errors.join(" ")).toContain("AI_INSIGHT_MAX_OUTPUT_TOKENS");
+  });
+
+  it("keeps the Learning Insight token limit separate from AI Tutor", () => {
+    const state = loadAiConfig({
+      AI_PROVIDER: "vertex",
+      GOOGLE_CLOUD_PROJECT: "cyber-academy-test",
+      AI_MAX_OUTPUT_TOKENS: "800",
+      AI_INSIGHT_MAX_OUTPUT_TOKENS: "1400",
+    });
+    expect(state.config).toMatchObject({
+      maxOutputTokens: 800,
+      insightMaxOutputTokens: 1_400,
+    });
   });
 
   it("keeps the API-key provider only as an explicit compatibility mode", () => {

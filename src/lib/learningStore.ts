@@ -11,6 +11,7 @@ import {
   fetchCatalogLessonsForCourse,
 } from "../services/catalogService";
 import { completeMyLesson, resetMyLearningState } from "../services/learningStateService";
+import type { LearningInsight } from "../types";
 
 export interface UserLearningStats {
   totalXp: number;
@@ -1021,6 +1022,86 @@ export const sendAiMessage = async (
   }
 };
 
+export class AiInsightClientError extends Error {
+  constructor(
+    message: string,
+    public readonly code: string,
+    public readonly retryable = false
+  ) {
+    super(message);
+    this.name = "AiInsightClientError";
+  }
+}
+
+function isNonEmptyInsightString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function isInsightTopic(value: unknown): value is { topic: string; reason: string } {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const topic = value as Record<string, unknown>;
+  return isNonEmptyInsightString(topic.topic) && isNonEmptyInsightString(topic.reason);
+}
+
+function isInsightRecommendation(
+  value: unknown
+): value is LearningInsight["recommendations"][number] {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const recommendation = value as Record<string, unknown>;
+  return (
+    ["lesson", "quiz", "simulation"].includes(String(recommendation.type)) &&
+    isNonEmptyInsightString(recommendation.id) &&
+    isNonEmptyInsightString(recommendation.title) &&
+    isNonEmptyInsightString(recommendation.reason)
+  );
+}
+
+export function isLearningInsightPayload(value: unknown): value is Omit<LearningInsight, "createdAt"> & {
+  createdAt?: string;
+} {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return false;
+  const insight = value as Record<string, unknown>;
+  return (
+    isNonEmptyInsightString(insight.summary) &&
+    Array.isArray(insight.strongTopics) &&
+    insight.strongTopics.length <= 2 &&
+    insight.strongTopics.every(isInsightTopic) &&
+    Array.isArray(insight.improvementTopics) &&
+    insight.improvementTopics.length <= 2 &&
+    insight.improvementTopics.every(isInsightTopic) &&
+    Array.isArray(insight.recommendations) &&
+    insight.recommendations.length <= 2 &&
+    insight.recommendations.every(isInsightRecommendation) &&
+    isNonEmptyInsightString(insight.studyTip) &&
+    ["high", "medium", "low"].includes(String(insight.confidence)) &&
+    (insight.createdAt === undefined || isNonEmptyInsightString(insight.createdAt))
+  );
+}
+
+function readCachedLearningInsight(cachedKey: string): LearningInsight | null {
+  const cachedData = localStorage.getItem(cachedKey);
+  if (!cachedData) return null;
+  try {
+    const parsed: unknown = JSON.parse(cachedData);
+    if (!isLearningInsightPayload(parsed)) {
+      localStorage.removeItem(cachedKey);
+      return null;
+    }
+    return {
+      summary: parsed.summary,
+      strongTopics: parsed.strongTopics,
+      improvementTopics: parsed.improvementTopics,
+      recommendations: parsed.recommendations,
+      studyTip: parsed.studyTip,
+      confidence: parsed.confidence,
+      createdAt: parsed.createdAt || new Date().toISOString(),
+    };
+  } catch {
+    localStorage.removeItem(cachedKey);
+    return null;
+  }
+}
+
 // API: Generate learning insights or fetch from cache
 export const getAiLearningInsight = async (
   userId: string,
@@ -1029,13 +1110,13 @@ export const getAiLearningInsight = async (
   simulationResults: any[],
   overallProgress: number,
   forceRefresh = false
-): Promise<any> => {
+): Promise<LearningInsight> => {
   if (!userId || !userId.trim()) throw new Error("User ID tidak boleh kosong.");
   const cachedKey = `ai_insight_${userId}`;
-  const cachedData = localStorage.getItem(cachedKey);
+  const cachedInsight = readCachedLearningInsight(cachedKey);
 
-  if (!forceRefresh && cachedData) {
-    return JSON.parse(cachedData);
+  if (!forceRefresh && cachedInsight) {
+    return cachedInsight;
   }
 
   try {
@@ -1051,21 +1132,47 @@ export const getAiLearningInsight = async (
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.error || "Gagal mendapatkan insight belajar.");
+      const errorData = await response.json().catch(() => ({} as any));
+      const structuredError =
+        errorData?.error && typeof errorData.error === "object"
+          ? errorData.error
+          : undefined;
+      throw new AiInsightClientError(
+        structuredError?.message ||
+          (typeof errorData?.error === "string" ? errorData.error : "Gagal mendapatkan insight belajar."),
+        structuredError?.code || errorData?.code || "AI_INSIGHT_REQUEST_FAILED",
+        structuredError?.retryable === true || errorData?.retryable === true
+      );
     }
 
-    const insight = await response.json();
-    insight.createdAt = new Date().toISOString();
+    const responseData: unknown = await response.json();
+    if (!isLearningInsightPayload(responseData)) {
+      throw new AiInsightClientError(
+        "Insight belum dapat diproses karena respons server belum sesuai format.",
+        "AI_INSIGHT_INVALID_FORMAT",
+        false
+      );
+    }
+    const insight: LearningInsight = {
+      summary: responseData.summary,
+      strongTopics: responseData.strongTopics,
+      improvementTopics: responseData.improvementTopics,
+      recommendations: responseData.recommendations,
+      studyTip: responseData.studyTip,
+      confidence: responseData.confidence,
+      createdAt: new Date().toISOString(),
+    };
 
     localStorage.setItem(cachedKey, JSON.stringify(insight));
     return insight;
   } catch (error: any) {
     console.error("getAiLearningInsight API error:", error);
-    if (cachedData) {
-      return JSON.parse(cachedData);
-    }
-    throw error;
+    if (error instanceof AiInsightClientError) throw error;
+    throw new AiInsightClientError(
+      "Koneksi ke layanan AI Insight mengalami gangguan.",
+      "AI_INSIGHT_NETWORK_ERROR",
+      true
+    );
   }
 };
 

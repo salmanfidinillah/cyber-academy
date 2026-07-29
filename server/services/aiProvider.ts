@@ -6,22 +6,41 @@ export interface AiGenerateRequest {
   systemInstruction: string;
   temperature: number;
   responseSchema: Record<string, unknown>;
+  maxOutputTokens?: number;
+}
+
+export interface AiGenerationResult {
+  text: string;
+  finishReason?: string;
+  blockReason?: string;
+  model: string;
 }
 
 export interface AiProvider {
   generateContent(request: AiGenerateRequest): Promise<string>;
+  generateStructuredContent?(request: AiGenerateRequest): Promise<AiGenerationResult>;
+}
+
+export interface AiSafeErrorMetadata {
+  responseLength?: number;
+  finishReason?: string;
+  hasMarkdownFence?: boolean;
+  validationIssueCount?: number;
 }
 
 export class AiServiceError extends Error {
+  public readonly safeMetadata?: AiSafeErrorMetadata;
+
   constructor(
     message: string,
     public readonly code: string,
     public readonly statusCode: number,
     public readonly retryable: boolean,
-    options?: { cause?: unknown }
+    options?: { cause?: unknown; safeMetadata?: AiSafeErrorMetadata }
   ) {
     super(message, options);
     this.name = "AiServiceError";
+    this.safeMetadata = options?.safeMetadata;
   }
 }
 
@@ -58,7 +77,7 @@ export function isRetryableAiError(error: unknown): boolean {
   ].some((fragment) => message.includes(fragment));
 }
 
-function publicErrorFrom(error: unknown): AiServiceError {
+function publicErrorFrom(error: unknown, serviceName = "AI Tutor"): AiServiceError {
   if (error instanceof AiServiceError) return error;
   const status = statusFromError(error as any);
   const retryable = isRetryableAiError(error);
@@ -76,7 +95,7 @@ function publicErrorFrom(error: unknown): AiServiceError {
     });
   }
   return new AiServiceError(
-    "AI Tutor sedang sibuk atau sementara tidak tersedia. Materi, kuis, dan simulasi tetap dapat digunakan. Silakan coba kembali beberapa saat lagi.",
+    `${serviceName} sedang sibuk atau sementara tidak tersedia. Materi, kuis, dan simulasi tetap dapat digunakan. Silakan coba kembali beberapa saat lagi.`,
     retryable ? "AI_TEMPORARILY_UNAVAILABLE" : "AI_PROVIDER_ERROR",
     503,
     retryable,
@@ -104,15 +123,27 @@ export async function generateWithRetry(
   provider: AiProvider,
   request: AiGenerateRequest,
   config: Pick<AiConfig, "requestTimeoutMs" | "maxRetries">,
-  dependencies: { sleep?: Sleep; random?: Random } = {}
+  dependencies: { sleep?: Sleep; random?: Random; serviceName?: string } = {}
 ): Promise<string> {
+  return executeWithRetry(
+    () => provider.generateContent(request),
+    config,
+    dependencies
+  );
+}
+
+async function executeWithRetry<T>(
+  operation: () => Promise<T>,
+  config: Pick<AiConfig, "requestTimeoutMs" | "maxRetries">,
+  dependencies: { sleep?: Sleep; random?: Random; serviceName?: string } = {}
+): Promise<T> {
   const sleep = dependencies.sleep || ((ms) => new Promise((resolve) => setTimeout(resolve, ms)));
   const random = dependencies.random || Math.random;
   let lastError: unknown;
 
   for (let attempt = 0; attempt <= config.maxRetries; attempt += 1) {
     try {
-      return await withTimeout(provider.generateContent(request), config.requestTimeoutMs);
+      return await withTimeout(operation(), config.requestTimeoutMs);
     } catch (error) {
       lastError = error;
       if (!isRetryableAiError(error) || attempt >= config.maxRetries) break;
@@ -122,7 +153,28 @@ export async function generateWithRetry(
     }
   }
 
-  throw publicErrorFrom(lastError);
+  throw publicErrorFrom(lastError, dependencies.serviceName);
+}
+
+export async function generateStructuredWithRetry(
+  provider: AiProvider,
+  request: AiGenerateRequest,
+  config: Pick<AiConfig, "requestTimeoutMs" | "maxRetries">,
+  dependencies: { sleep?: Sleep; random?: Random; serviceName?: string } = {}
+): Promise<AiGenerationResult> {
+  return executeWithRetry(
+    async () => {
+      if (provider.generateStructuredContent) {
+        return provider.generateStructuredContent(request);
+      }
+      return {
+        text: await provider.generateContent(request),
+        model: "mock-or-compatibility-provider",
+      };
+    },
+    config,
+    dependencies
+  );
 }
 
 export function createAiProvider(configState: AiConfigState): AiProvider | null {
@@ -150,21 +202,30 @@ export function createAiProvider(configState: AiConfigState): AiProvider | null 
           ...sharedOptions,
         });
 
-  return {
-    async generateContent(request) {
+  const generateStructuredContent = async (request: AiGenerateRequest): Promise<AiGenerationResult> => {
       const response = await client.models.generateContent({
         model: config.model,
         contents: request.contents,
         config: {
           systemInstruction: request.systemInstruction,
           temperature: request.temperature,
-          maxOutputTokens: config.maxOutputTokens,
+          maxOutputTokens: request.maxOutputTokens ?? config.maxOutputTokens,
           responseMimeType: "application/json",
           responseSchema: request.responseSchema,
         },
       });
-      return response.text || "";
+      return {
+        text: response.text || "",
+        finishReason: response.candidates?.[0]?.finishReason,
+        blockReason: response.promptFeedback?.blockReason,
+        model: response.modelVersion || config.model,
+      };
+  };
+
+  return {
+    async generateContent(request) {
+      return (await generateStructuredContent(request)).text;
     },
+    generateStructuredContent,
   };
 }
-

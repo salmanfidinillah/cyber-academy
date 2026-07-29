@@ -39,6 +39,7 @@ AI_REQUEST_TIMEOUT_MS="25000"
 AI_MAX_INPUT_CHARS="4000"
 AI_MAX_HISTORY_MESSAGES="12"
 AI_MAX_OUTPUT_TOKENS="800"
+AI_INSIGHT_MAX_OUTPUT_TOKENS="1400"
 AI_MAX_RETRIES="2"
 ```
 
@@ -134,7 +135,7 @@ gcloud run services update cyber-academy \
 gcloud run services update cyber-academy \
   --region asia-southeast2 \
   --project PROJECT_ID \
-  --update-env-vars AI_PROVIDER=vertex,GOOGLE_CLOUD_PROJECT=PROJECT_ID,GOOGLE_CLOUD_LOCATION=global,GEMINI_MODEL=gemini-2.5-flash,AI_REQUEST_TIMEOUT_MS=25000,AI_MAX_INPUT_CHARS=4000,AI_MAX_HISTORY_MESSAGES=12,AI_MAX_OUTPUT_TOKENS=800,AI_MAX_RETRIES=2
+  --update-env-vars AI_PROVIDER=vertex,GOOGLE_CLOUD_PROJECT=PROJECT_ID,GOOGLE_CLOUD_LOCATION=global,GEMINI_MODEL=gemini-2.5-flash,AI_REQUEST_TIMEOUT_MS=25000,AI_MAX_INPUT_CHARS=4000,AI_MAX_HISTORY_MESSAGES=12,AI_MAX_OUTPUT_TOKENS=800,AI_INSIGHT_MAX_OUTPUT_TOKENS=1400,AI_MAX_RETRIES=2
 ```
 
 Cloud Run memperoleh credential dari service identity melalui metadata server
@@ -164,7 +165,11 @@ Health check tidak memanggil model dan tidak menimbulkan biaya inferensi.
 - tidak retry untuk 400, 401, 403, 404, safety rejection, atau konfigurasi
   permanen yang salah;
 - retry internal SDK dimatikan agar jumlah attempt dikendalikan aplikasi;
-- output maksimal 800 token;
+- output AI Tutor maksimal 800 token;
+- structured output Learning Insight maksimal 1.400 token dan memakai batas
+  terpisah agar perubahan Insight tidak memengaruhi AI Tutor;
+- Learning Insight memeriksa `finishReason` sebelum parsing dan melakukan
+  maksimal satu retry hanya untuk respons kosong atau terpotong;
 - pertanyaan maksimal 4.000 karakter;
 - history maksimal 12 message dan setiap message dipotong;
 - konteks lesson, remedial, dan simulasi dipotong ke bagian yang relevan;
@@ -229,6 +234,30 @@ Gunakan OTP dan credential palsu, bukan data asli.
 13. Pastikan login, dashboard, lesson, progress, quiz, simulasi, badge,
     sertifikat, dan admin tetap dapat dibuka ketika AI unavailable.
 
+### Pengujian manual Learning Insight
+
+1. Login menggunakan akun pengujian.
+2. Buka `/progress/insight`.
+3. Pilih **Perbarui Analisis** dan pastikan Insight tampil dalam Bahasa
+   Indonesia tanpa Markdown atau JSON mentah.
+4. Refresh halaman dan pastikan Insight valid dibaca dari cache tanpa
+   menggandakan data.
+5. Pilih **Perbarui Analisis** kembali secara wajar dan pastikan hanya satu
+   hasil terbaru yang tersimpan.
+6. Uji akun dengan progress sedikit serta tanpa hasil kuis/simulasi.
+7. Uji akun dengan progress, kuis, dan simulasi yang lebih banyak.
+8. Pada environment pengujian, buat provider mock mengembalikan
+   `finishReason=MAX_TOKENS`; pastikan UI menampilkan **Insight belum dapat
+   diproses** dan tidak menampilkan JSON parsial.
+9. Buat provider mock mengembalikan safety rejection; pastikan pesan safety
+   berbeda dari pesan timeout atau format.
+10. Cabut sementara konfigurasi Vertex pada environment pengujian lalu restart;
+    pastikan pesan menyatakan AI Insight tidak tersedia dan fitur non-AI tetap
+    dapat digunakan.
+11. Pastikan AI Tutor utama tetap dapat menjawab dan riwayat chat tidak berubah.
+12. Pastikan dashboard, lesson, progress, kuis, simulasi, badge, sertifikat,
+    profil, dan admin tetap dapat dibuka.
+
 ## Troubleshooting
 
 | Status/gejala | Pemeriksaan |
@@ -281,4 +310,3 @@ gcloud run services update-traffic cyber-academy \
 
 Jangan menjalankan rollback, menghapus revision, mengubah IAM, atau menghapus
 service tanpa persetujuan pemilik project.
-

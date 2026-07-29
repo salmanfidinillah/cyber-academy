@@ -42,6 +42,7 @@ function config(overrides: Partial<NonNullable<AiConfigState["config"]>> = {}): 
       maxInputChars: 4_000,
       maxHistoryMessages: 12,
       maxOutputTokens: 800,
+      insightMaxOutputTokens: 1_400,
       maxRetries: 0,
       ...overrides,
     },
@@ -222,6 +223,209 @@ describe("Vertex AI API contract", () => {
     expect(response.body).toEqual(insightResult);
   });
 
+  it("uses the dedicated Learning Insight token limit without changing the Tutor limit", async () => {
+    const generateStructuredContent = vi.fn().mockResolvedValue({
+      text: JSON.stringify(insightResult),
+      finishReason: "STOP",
+      model: "gemini-2.5-flash",
+    });
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
+    const response = await request(
+      createApp(provider, {
+        configState: config({ maxOutputTokens: 500, insightMaxOutputTokens: 1_400 }),
+      })
+    )
+      .post("/api/ai/insight")
+      .set(authHeader)
+      .send({
+        completedLessonsCount: 3,
+        quizScores: [],
+        simulationResults: [],
+        overallProgress: 25,
+      });
+
+    expect(response.status).toBe(200);
+    expect(generateStructuredContent.mock.calls[0][0].maxOutputTokens).toBe(1_400);
+  });
+
+  it("detects MAX_TOKENS before JSON parsing and retries only once", async () => {
+    const generateStructuredContent = vi.fn().mockResolvedValue({
+      text: '{"summary":"terpotong"',
+      finishReason: "MAX_TOKENS",
+      model: "gemini-2.5-flash",
+    });
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
+    const response = await request(createApp(provider))
+      .post("/api/ai/insight")
+      .set(authHeader)
+      .send({
+        completedLessonsCount: 3,
+        quizScores: [],
+        simulationResults: [],
+        overallProgress: 25,
+      });
+
+    expect(response.status).toBe(502);
+    expect(response.body).toMatchObject({
+      success: false,
+      error: { code: "AI_INSIGHT_TRUNCATED" },
+    });
+    expect(generateStructuredContent).toHaveBeenCalledTimes(2);
+  });
+
+  it("retries an empty Insight response once and returns a dedicated error", async () => {
+    const generateStructuredContent = vi.fn().mockResolvedValue({
+      text: " ",
+      finishReason: "STOP",
+      model: "gemini-2.5-flash",
+    });
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
+    const response = await request(createApp(provider))
+      .post("/api/ai/insight")
+      .set(authHeader)
+      .send({
+        completedLessonsCount: 0,
+        quizScores: [],
+        simulationResults: [],
+        overallProgress: 0,
+      });
+
+    expect(response.status).toBe(502);
+    expect(response.body.error.code).toBe("AI_INSIGHT_EMPTY_RESPONSE");
+    expect(generateStructuredContent).toHaveBeenCalledTimes(2);
+  });
+
+  it("does not retry an Insight schema validation error", async () => {
+    const generateStructuredContent = vi.fn().mockResolvedValue({
+      text: JSON.stringify({ ...insightResult, strongTopics: "MFA" }),
+      finishReason: "STOP",
+      model: "gemini-2.5-flash",
+    });
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
+    const response = await request(createApp(provider))
+      .post("/api/ai/insight")
+      .set(authHeader)
+      .send({
+        completedLessonsCount: 3,
+        quizScores: [],
+        simulationResults: [],
+        overallProgress: 25,
+      });
+
+    expect(response.status).toBe(502);
+    expect(response.body.error.code).toBe("AI_INSIGHT_SCHEMA_VALIDATION_FAILED");
+    expect(generateStructuredContent).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns a dedicated safety rejection without retrying", async () => {
+    const generateStructuredContent = vi.fn().mockResolvedValue({
+      text: "",
+      finishReason: "SAFETY",
+      blockReason: "SAFETY",
+      model: "gemini-2.5-flash",
+    });
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
+    const response = await request(createApp(provider))
+      .post("/api/ai/insight")
+      .set(authHeader)
+      .send({
+        completedLessonsCount: 3,
+        quizScores: [],
+        simulationResults: [],
+        overallProgress: 25,
+      });
+
+    expect(response.status).toBe(422);
+    expect(response.body.error.code).toBe("AI_INSIGHT_SAFETY_REJECTED");
+    expect(generateStructuredContent).toHaveBeenCalledTimes(1);
+  });
+
+  it("returns a structured timeout without using the global provider retries", async () => {
+    const generateStructuredContent = vi.fn(() => new Promise<never>(() => {}));
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
+    const response = await request(
+      createApp(provider, { configState: config({ requestTimeoutMs: 5, maxRetries: 2 }) })
+    )
+      .post("/api/ai/insight")
+      .set(authHeader)
+      .send({
+        completedLessonsCount: 3,
+        quizScores: [],
+        simulationResults: [],
+        overallProgress: 25,
+      });
+
+    expect(response.status).toBe(503);
+    expect(response.body.error.code).toBe("AI_TIMEOUT");
+    expect(generateStructuredContent).toHaveBeenCalledTimes(1);
+  });
+
+  it("deduplicates concurrent valid Insight requests with the same requestId", async () => {
+    let resolveProvider!: (value: {
+      text: string;
+      finishReason: string;
+      model: string;
+    }) => void;
+    const providerPromise = new Promise<{
+      text: string;
+      finishReason: string;
+      model: string;
+    }>((resolve) => {
+      resolveProvider = resolve;
+    });
+    const generateStructuredContent = vi.fn(() => providerPromise);
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
+    const app = createApp(provider, { deduplicator: new AiRequestDeduplicator() });
+    const payload = {
+      completedLessonsCount: 3,
+      quizScores: [],
+      simulationResults: [],
+      overallProgress: 25,
+      requestId: "3df49630-df9e-4a3e-93d9-b53aaf1f06dd",
+    };
+    const first = request(app).post("/api/ai/insight").set(authHeader).send(payload);
+    const second = request(app).post("/api/ai/insight").set(authHeader).send(payload);
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    resolveProvider({
+      text: JSON.stringify(insightResult),
+      finishReason: "STOP",
+      model: "gemini-2.5-flash",
+    });
+    const [firstResponse, secondResponse] = await Promise.all([first, second]);
+
+    expect(firstResponse.status).toBe(200);
+    expect(secondResponse.status).toBe(200);
+    expect(generateStructuredContent).toHaveBeenCalledTimes(1);
+  });
+
+  it("logs only safe Insight metadata for an invalid response", async () => {
+    const consoleError = vi.spyOn(console, "error").mockImplementation(() => {});
+    const rawResponse = "private-model-output-that-must-not-be-logged";
+    const generateStructuredContent = vi.fn().mockResolvedValue({
+      text: rawResponse,
+      finishReason: "STOP",
+      model: "gemini-2.5-flash",
+    });
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
+    const response = await request(createApp(provider))
+      .post("/api/ai/insight")
+      .set(authHeader)
+      .send({
+        completedLessonsCount: 3,
+        quizScores: [],
+        simulationResults: [],
+        overallProgress: 25,
+      });
+
+    expect(response.status).toBe(502);
+    const logged = consoleError.mock.calls.flat().join(" ");
+    expect(logged).toContain("AI_INSIGHT_INVALID_FORMAT");
+    expect(logged).toContain('"finishReason":"STOP"');
+    expect(logged).toContain(`"responseLength":${rawResponse.length}`);
+    expect(logged).not.toContain(rawResponse);
+    consoleError.mockRestore();
+  });
+
   it("returns 503 when AI is unavailable while non-AI endpoints still work", async () => {
     const provider = { generateContent: vi.fn().mockRejectedValue(Object.assign(new Error("down"), { status: 503 })) };
     const app = createApp(provider);
@@ -252,4 +456,3 @@ describe("Vertex AI API contract", () => {
     expect(provider.generateContent).not.toHaveBeenCalled();
   });
 });
-

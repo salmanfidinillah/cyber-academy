@@ -22,6 +22,10 @@ import { fetchMyProgress } from "../services/learningStateService";
 import { fetchMyQuizAttempts } from "../services/quizService";
 import { authenticatedFetch } from "../services/apiClient";
 import { User, LearningInsight } from "../types";
+import {
+  getLearningInsightErrorView,
+  LearningInsightErrorView,
+} from "./learningInsightError";
 
 interface LearningInsightPageProps {
   currentUser: User;
@@ -34,7 +38,7 @@ export const LearningInsightPage: React.FC<LearningInsightPageProps> = ({
 }) => {
   const [insight, setInsight] = useState<LearningInsight | null>(null);
   const [loading, setLoading] = useState(false);
-  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [errorState, setErrorState] = useState<LearningInsightErrorView | null>(null);
 
   // Statistics states
   const [stats, setStats] = useState({
@@ -46,7 +50,7 @@ export const LearningInsightPage: React.FC<LearningInsightPageProps> = ({
 
   const loadUserDataAndInsight = async (forceRefresh = false) => {
     setLoading(true);
-    setErrorMsg(null);
+    setErrorState(null);
     try {
       const [userProgress, userQuizzes, simulationResponse] = await Promise.all([
         fetchMyProgress(),
@@ -98,7 +102,7 @@ export const LearningInsightPage: React.FC<LearningInsightPageProps> = ({
       setInsight(result);
     } catch (err: any) {
       console.error("Gagal memuat learning insight:", err);
-      setErrorMsg(err.message || "Gagal menghubungkan sistem AI Analyst.");
+      setErrorState(getLearningInsightErrorView(err));
     } finally {
       setLoading(false);
     }
@@ -213,12 +217,12 @@ export const LearningInsightPage: React.FC<LearningInsightPageProps> = ({
             Mesin analisis AI kami sedang mengompilasi riwayat kuis dan simulasi Anda untuk merumuskan saran belajar terarah.
           </p>
         </div>
-      ) : errorMsg ? (
+      ) : errorState ? (
         <div className="p-6 bg-pastel-peach border-2 border-brand-text rounded-3xl shadow-[4px_4px_0px_#111] text-center space-y-4 max-w-lg mx-auto">
           <AlertTriangle className="w-12 h-12 text-pastel-red mx-auto" />
-          <h3 className="font-heading font-extrabold text-base text-brand-text">Insight Bermasalah</h3>
+          <h3 className="font-heading font-extrabold text-base text-brand-text">{errorState.title}</h3>
           <p className="text-xs text-brand-muted font-bold">
-            {errorMsg}. Kami gagal mengontak server AI. Pastikan koneksi internet Anda stabil atau coba perbarui halaman.
+            {errorState.message}
           </p>
           <NeoButton variant="secondary" size="sm" onClick={() => loadUserDataAndInsight()} className="text-xs">
             Coba Lagi
