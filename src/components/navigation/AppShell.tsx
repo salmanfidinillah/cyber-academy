@@ -45,8 +45,17 @@ export const AppShell: React.FC<AppShellProps> = ({ currentUser, currentRoute, o
     if (currentRoute === "/profile") {
       return { label: "Kembali ke Dashboard", route: "/dashboard" };
     }
-    // Quiz/lessons inside courses
-    if (currentRoute.includes("/quiz") || currentRoute.includes("/lessons/")) {
+    // Lessons inside courses use the single canonical back action.
+    if (currentRoute.includes("/lessons/")) {
+      const parts = currentRoute.split("/");
+      const courseIndex = parts.indexOf("courses");
+      if (courseIndex !== -1 && parts[courseIndex + 1]) {
+        const courseSlug = parts[courseIndex + 1];
+        return { label: "Kembali ke Detail Kelas", route: `/learn/courses/${courseSlug}` };
+      }
+    }
+    // Quiz keeps its existing back navigation.
+    if (currentRoute.includes("/quiz")) {
       const parts = currentRoute.split("/");
       const courseIndex = parts.indexOf("courses");
       if (courseIndex !== -1 && parts[courseIndex + 1]) {

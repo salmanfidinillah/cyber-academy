@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { lazy, Suspense, useState, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
 import { LandingPage } from "./components/LandingPage";
 import { Login } from "./components/Login";
@@ -8,7 +8,6 @@ import { Onboarding } from "./components/Onboarding";
 import { Dashboard } from "./components/Dashboard";
 import { LearningPaths } from "./components/LearningPaths";
 import { CourseDetail } from "./components/CourseDetail";
-import { LessonDetail } from "./components/LessonDetail";
 import { CourseQuiz } from "./components/CourseQuiz";
 import { QuizResult } from "./components/QuizResult";
 import { SimulationsLanding } from "./components/SimulationsLanding";
@@ -19,7 +18,7 @@ import { LearningInsightPage } from "./components/LearningInsight";
 import { BadgeList } from "./components/BadgeList";
 import { CertificatePreview } from "./components/CertificatePreview";
 import { PublicVerifyCertificate } from "./components/PublicVerifyCertificate";
-import { ErrorBoundary } from "./components/LoadingBoundary";
+import { ErrorBoundary, LoadingBoundary } from "./components/LoadingBoundary";
 
 // Profile and Settings pages
 import { ProfilePage } from "./components/ProfilePage";
@@ -47,6 +46,12 @@ import { AdminSimulations } from "./components/admin/AdminSimulations";
 import { AdminAuditLogs } from "./components/admin/AdminAuditLogs";
 import { AdminBadges } from "./components/admin/AdminBadges";
 import { AdminCertificates } from "./components/admin/AdminCertificates";
+
+const LessonDetail = lazy(() =>
+  import("./components/LessonDetail").then((module) => ({
+    default: module.LessonDetail,
+  })),
+);
 
 export default function App() {
   const navigate = useNavigate();
@@ -126,7 +131,16 @@ export default function App() {
   const LessonDetailRoute = () => {
     const { currentUser } = useUser();
     const { courseSlug, lessonSlug } = useParams();
-    return <LessonDetail currentUser={currentUser!} onNavigate={handleNavigate} courseSlug={courseSlug || ""} lessonSlug={lessonSlug || ""} />;
+    return (
+      <Suspense fallback={<LoadingBoundary message="Memuat materi pelajaran..." />}>
+        <LessonDetail
+          currentUser={currentUser!}
+          onNavigate={handleNavigate}
+          courseSlug={courseSlug || ""}
+          lessonSlug={lessonSlug || ""}
+        />
+      </Suspense>
+    );
   };
 
   const CourseQuizRoute = () => {
