@@ -200,7 +200,7 @@ export const LearningPaths: React.FC<LearningPathsProps> = ({
         courseCount: 0,
         durationMinutes: 0,
         xpReward: 0,
-        badgeName: "Cyber Defender",
+        badgeName: "Beginner Master",
         courses: [],
       }
     : null;
@@ -238,10 +238,10 @@ export const LearningPaths: React.FC<LearningPathsProps> = ({
     const isActivePathLocked = pathLocks[activePathData.id] ?? false;
     const pathBadgeName =
       activePathData.id === "intermediate-path"
-        ? "Intermediate Defender"
+        ? "Intermediate Master"
         : activePathData.id === "advanced-path"
-        ? "Advanced Specialist"
-        : activePathData.badgeName || "Cyber Defender";
+        ? "Advanced Master"
+        : activePathData.badgeName || "Beginner Master";
 
     return (
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8 animate-fadeIn font-sans">

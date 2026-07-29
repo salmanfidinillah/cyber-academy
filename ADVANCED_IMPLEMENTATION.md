@@ -65,7 +65,7 @@ Materi penetration testing dan malware dibatasi pada etika, izin, metodologi, la
 5. Path selesai setelah seluruh delapan course selesai.
 6. XP lesson memakai dokumen transaksi deterministik per user dan lesson.
 7. XP quiz hanya diberikan pada kelulusan pertama; attempt berikutnya tetap menyimpan hasil terbaru dan skor terbaik.
-8. Badge `badge-advanced-specialist` diberikan satu kali setelah `advanced-path` selesai.
+8. Badge `badge-advanced-specialist` dengan nama publik **Advanced Master** diberikan satu kali setelah seluruh syarat `advanced-path` terverifikasi server.
 9. Sertifikat Advanced memakai sistem sertifikat generik dengan `learningPathId=advanced-path`; eligibility membutuhkan semua lesson, course, dan quiz selesai/lulus.
 
 ## Firestore

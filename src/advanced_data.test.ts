@@ -75,16 +75,17 @@ describe("Advanced learning path curriculum integrity", () => {
   });
 
   it("registers an idempotent Advanced path badge and exposes Advanced certificates", () => {
-    const achievementSource = fs.readFileSync(
-      path.resolve(process.cwd(), "server/services/achievementService.ts"),
-      "utf8"
-    );
     const certificateSource = fs.readFileSync(
       path.resolve(process.cwd(), "src/components/CertificatePreview.tsx"),
       "utf8"
     );
-    expect(achievementSource).toContain('"badge-advanced-specialist"');
-    expect(achievementSource).toContain('"path_completion", "advanced-path"');
+    const badgeDefinitionsSource = fs.readFileSync(
+      path.resolve(process.cwd(), "server/services/badgeDefinitions.ts"),
+      "utf8"
+    );
+    expect(badgeDefinitionsSource).toContain('"badge-advanced-specialist"');
+    expect(badgeDefinitionsSource).toContain('requirementType: "learning_path_completion"');
+    expect(badgeDefinitionsSource).toContain('requirementValue: "advanced-path"');
     expect(certificateSource).toContain('selectedPath?.level === "Advanced" ? 80');
     expect(certificateSource).not.toContain('selectedPathId === "beginner-path"');
   });

@@ -269,12 +269,18 @@ export interface Badge {
   title: string;
   slug: string;
   description: string;
+  requirementLabel?: string;
   icon: string;
+  color?: string;
   category: string;
   requirementType: string;
   requirementValue: string;
   order: number;
   status: "active" | "inactive";
+  deprecated?: boolean;
+  isLegacy?: boolean;
+  replacementBadgeId?: string | null;
+  previousSlugs?: string[];
   createdAt: string;
   updatedAt: string;
 }
@@ -288,6 +294,28 @@ export interface UserBadge {
   sourceId: string;
   awardedAt: string;
   idempotencyKey: string;
+}
+
+export interface BadgeProgress {
+  badgeId: string;
+  badgeSlug: string;
+  title: string;
+  requirementType: string;
+  requirementValue: string;
+  completedItems: number;
+  totalItems: number;
+  progressPercent: number;
+  isEligible: boolean;
+  breakdown: {
+    coursesCompleted?: number;
+    totalCourses?: number;
+    lessonsCompleted?: number;
+    totalLessons?: number;
+    quizzesPassed?: number;
+    totalQuizzes?: number;
+    simulationsPassed?: number;
+    totalSimulations?: number;
+  };
 }
 
 export interface Certificate {

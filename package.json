@@ -14,6 +14,8 @@
     "set-admin": "tsx scripts/set-admin.ts",
     "seed-content": "tsx scripts/seed-content.ts",
     "seed:content": "tsx scripts/seed-content.ts",
+    "seed-badges": "tsx scripts/seed-badges.ts",
+    "migrate:badges": "tsx scripts/migrate-badges.ts",
     "test": "vitest run"
   },
   "dependencies": {

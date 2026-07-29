@@ -435,7 +435,7 @@ export const learningPaths: LearningPath[] = [
     durationMinutes: 120,
     xpReward: 300,
     bgColor: "bg-pastel-mint",
-    badgeName: "First Step & Cyber Defender",
+    badgeName: "Beginner Master",
     courses: [
       { title: "Dasar Keamanan Siber", description: "Mengenal dunia siber dan mengapa perlindungan informasi itu sangat penting.", lessonsCount: 2, completed: false, locked: false },
       { title: "Sandi Tangguh & Autentikasi", description: "Teknik membuat kata sandi aman dan mengaktifkan 2-Factor Authentication (2FA).", lessonsCount: 2, completed: false, locked: false },
@@ -452,7 +452,7 @@ export const learningPaths: LearningPath[] = [
     durationMinutes: intermediateCourses.reduce((total, course) => total + course.estimatedDuration, 0),
     xpReward: 500,
     bgColor: "bg-pastel-blue",
-    badgeName: "Intermediate Defender",
+    badgeName: "Intermediate Master",
     courses: intermediateCourses.map((course) => ({
       title: course.title,
       description: course.description,
@@ -470,7 +470,7 @@ export const learningPaths: LearningPath[] = [
     durationMinutes: advancedCourses.reduce((total, course) => total + course.estimatedDuration, 0),
     xpReward: 800,
     bgColor: "bg-pastel-lavender",
-    badgeName: "Advanced Security Specialist",
+    badgeName: "Advanced Master",
     courses: advancedCourses.map((course) => ({
       title: course.title,
       description: course.description,

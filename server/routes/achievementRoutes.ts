@@ -4,10 +4,11 @@ import { z } from "zod";
 import { authenticateUser, requireAdmin } from "../middleware/auth";
 import { AuthenticatedRequest } from "../types";
 import {
-  evaluateUserBadges,
+  evaluateUserBadgeState,
   findCertificateByCode,
   generateCertificate,
   getCertificateEligibility,
+  getUserBadgeProgress,
   listAllCertificates,
   listBadges,
   listUserBadges,
@@ -86,13 +87,22 @@ router.get("/me/badges", authenticateUser, async (req: AuthenticatedRequest, res
   }
 });
 
+router.get("/me/badges/progress", authenticateUser, async (req: AuthenticatedRequest, res) => {
+  try {
+    res.json(await getUserBadgeProgress(req.authUser!.uid));
+  } catch (error) {
+    sendError(res, error);
+  }
+});
+
 router.post("/me/badges/evaluate", authenticateUser, async (req: AuthenticatedRequest, res) => {
   try {
     if (Object.keys(req.body || {}).length > 0) {
       res.status(400).json({ error: "Endpoint ini tidak menerima data progress dari client." });
       return;
     }
-    res.json({ success: true, userBadges: await evaluateUserBadges(req.authUser!.uid) });
+    const state = await evaluateUserBadgeState(req.authUser!.uid);
+    res.json({ success: true, ...state });
   } catch (error) {
     sendError(res, error);
   }
