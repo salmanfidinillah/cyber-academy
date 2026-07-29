@@ -1,8 +1,19 @@
 import { describe, expect, it, vi } from "vitest";
+const { sdkGenerateContent } = vi.hoisted(() => ({
+  sdkGenerateContent: vi.fn(),
+}));
+
+vi.mock("@google/genai", () => ({
+  GoogleGenAI: class {
+    models = { generateContent: sdkGenerateContent };
+  },
+}));
+
 import {
   AiGenerateRequest,
   AiProvider,
   AiServiceError,
+  createAiProvider,
   generateWithRetry,
   isRetryableAiError,
 } from "./aiProvider";
@@ -69,5 +80,43 @@ describe("AI reliability", () => {
     expect(isRetryableAiError(Object.assign(new Error("reset"), { code: "ECONNRESET" }))).toBe(true);
     expect(isRetryableAiError(new Error("temporary capacity exhausted"))).toBe(true);
     expect(isRetryableAiError(Object.assign(new Error("not found"), { status: 404 }))).toBe(false);
+  });
+
+  it("preserves Vertex finish and safety metadata for structured Insight output", async () => {
+    sdkGenerateContent.mockResolvedValueOnce({
+      text: '{"summary":"ok"}',
+      candidates: [{ finishReason: "MAX_TOKENS" }],
+      promptFeedback: { blockReason: "SAFETY" },
+      modelVersion: "gemini-2.5-flash-001",
+    });
+    const provider = createAiProvider({
+      configured: true,
+      errors: [],
+      config: {
+        provider: "vertex",
+        project: "test-project",
+        location: "global",
+        model: "gemini-2.5-flash",
+        requestTimeoutMs: 1_000,
+        maxInputChars: 4_000,
+        maxHistoryMessages: 12,
+        maxOutputTokens: 800,
+        insightMaxOutputTokens: 1_400,
+        maxRetries: 0,
+      },
+    });
+
+    const result = await provider!.generateStructuredContent!({
+      ...request,
+      maxOutputTokens: 1_400,
+    });
+
+    expect(result).toEqual({
+      text: '{"summary":"ok"}',
+      finishReason: "MAX_TOKENS",
+      blockReason: "SAFETY",
+      model: "gemini-2.5-flash-001",
+    });
+    expect(sdkGenerateContent.mock.calls.at(-1)?.[0].config.maxOutputTokens).toBe(1_400);
   });
 });

@@ -13,6 +13,7 @@ export interface AiConfig {
   maxInputChars: number;
   maxHistoryMessages: number;
   maxOutputTokens: number;
+  insightMaxOutputTokens: number;
   maxRetries: number;
 }
 
@@ -125,6 +126,14 @@ export function loadAiConfig(env: NodeJS.ProcessEnv = process.env): AiConfigStat
     8_192,
     errors
   );
+  const insightMaxOutputTokens = parseStrictPositiveInt(
+    env.AI_INSIGHT_MAX_OUTPUT_TOKENS,
+    "AI_INSIGHT_MAX_OUTPUT_TOKENS",
+    1_400,
+    256,
+    8_192,
+    errors
+  );
   const maxRetries = parseStrictPositiveInt(
     env.AI_MAX_RETRIES,
     "AI_MAX_RETRIES",
@@ -147,6 +156,7 @@ export function loadAiConfig(env: NodeJS.ProcessEnv = process.env): AiConfigStat
       maxInputChars,
       maxHistoryMessages,
       maxOutputTokens,
+      insightMaxOutputTokens,
       maxRetries,
     },
   };
