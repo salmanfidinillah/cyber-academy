@@ -190,7 +190,7 @@ export const CourseDetail: React.FC<CourseDetailProps> = ({
   const isQuizLocked = !allLessonsCompleted || isCourseLocked;
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8 animate-fadeIn font-sans">
+    <div className="mx-auto w-full min-w-0 max-w-5xl space-y-8 py-6 font-sans animate-fadeIn sm:py-12">
       <div className="flex items-center space-x-2">
         <NeoButton variant="secondary" size="sm" onClick={handleBackToPath} className="font-bold flex items-center space-x-1.5">
           <ArrowLeft className="w-4 h-4" />

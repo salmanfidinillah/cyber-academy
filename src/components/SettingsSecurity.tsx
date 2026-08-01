@@ -62,7 +62,7 @@ export const SettingsSecurity: React.FC<SettingsSecurityProps> = ({ currentUser,
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6">
+    <div className="mx-auto w-full min-w-0 max-w-2xl space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-heading font-bold mb-2">Keamanan</h1>
         <p className="text-gray-600">Perbarui kata sandi dan amankan akun Anda.</p>

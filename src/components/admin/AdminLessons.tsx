@@ -186,15 +186,15 @@ export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavig
   }, [lessons, search]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 text-left">
-      <div className="flex items-center justify-between">
-        <div>
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6 text-left">
+      <div className="flex min-w-0 flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
           <h1 className="text-3xl font-heading font-bold">Manajemen Lessons</h1>
           <p className="text-sm text-gray-600 font-bold mt-1">Data tersimpan langsung di Cloud Firestore.</p>
         </div>
         <button
           onClick={handleOpenCreate}
-          className="flex items-center gap-2 p-3 bg-pastel-blue border-2 border-black rounded-xl font-bold neo-shadow-sm hover:bg-opacity-90 transition-all cursor-pointer"
+          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border-2 border-black bg-pastel-blue p-3 font-bold neo-shadow-sm transition-all hover:bg-opacity-90 cursor-pointer sm:w-auto"
         >
           <Plus className="w-5 h-5" />
           Tambah Baru
@@ -202,10 +202,10 @@ export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavig
       </div>
 
       {error && (
-        <NeoCard className="p-4 bg-pastel-pink flex items-center justify-between">
-          <div className="flex items-center gap-3">
+        <NeoCard className="flex flex-col items-stretch gap-3 bg-pastel-pink p-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-start gap-3">
             <AlertTriangle className="w-5 h-5 text-red-600" />
-            <span className="font-bold text-red-800">{error}</span>
+            <span className="min-w-0 break-words font-bold text-red-800 [overflow-wrap:anywhere]">{error}</span>
           </div>
           <button onClick={() => loadData(null)} className="p-2 bg-white rounded-lg border-2 border-black font-bold flex items-center gap-1 cursor-pointer">
             <RefreshCw className="w-4 h-4" /> Coba Lagi
@@ -214,22 +214,22 @@ export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavig
       )}
 
       <NeoCard className="p-4 flex flex-col md:flex-row items-center gap-4">
-        <form onSubmit={handleSearchSubmit} className="flex-1 flex items-center gap-3 bg-white p-2 rounded-xl border-2 border-black w-full">
+        <form onSubmit={handleSearchSubmit} className="flex min-w-0 w-full flex-1 items-center gap-3 rounded-xl border-2 border-black bg-white p-2">
           <Search className="w-5 h-5 text-gray-400" />
           <input
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 outline-none font-bold bg-transparent"
+            className="min-w-0 flex-1 outline-none font-bold bg-transparent"
             placeholder="Cari berdasarkan title atau slug..."
           />
         </form>
 
-        <div className="flex items-center gap-3 w-full md:w-auto">
+        <div className="grid w-full grid-cols-1 gap-3 sm:grid-cols-2 md:flex md:w-auto">
           <select
             value={courseFilter}
             onChange={(e) => setCourseFilter(e.target.value)}
-            className="bg-white p-2 rounded-xl border-2 border-black font-bold outline-none cursor-pointer"
+            className="min-w-0 bg-white p-2 rounded-xl border-2 border-black font-bold outline-none cursor-pointer"
           >
             <option value="">Semua Course</option>
             {courses.map((c) => (
@@ -242,7 +242,7 @@ export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavig
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
-            className="bg-white p-2 rounded-xl border-2 border-black font-bold outline-none cursor-pointer"
+            className="min-w-0 bg-white p-2 rounded-xl border-2 border-black font-bold outline-none cursor-pointer"
           >
             <option value="all">Semua Status</option>
             <option value="draft">Draft</option>
@@ -253,7 +253,7 @@ export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavig
       </NeoCard>
 
       <NeoCard className="p-0 overflow-hidden overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full min-w-[46rem] text-left">
           <thead>
             <tr className="bg-gray-50 border-b-2 border-black">
               <th className="p-4 font-bold text-sm uppercase">Order</th>
@@ -325,7 +325,7 @@ export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavig
         </table>
 
         {/* Pagination controls */}
-        <div className="flex items-center justify-between p-4 bg-gray-50 border-t-2 border-black">
+        <div className="flex min-w-[20rem] items-center justify-between gap-3 border-t-2 border-black bg-gray-50 p-4">
           <div className="text-xs font-bold text-gray-600">
             Halaman {pageIndex + 1}
           </div>
@@ -365,8 +365,8 @@ export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavig
 
       {/* FORM MODAL */}
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 overflow-y-auto">
-          <div className="bg-white border-2 border-black rounded-2xl p-6 max-w-2xl w-full neo-shadow space-y-4 my-8">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-3 sm:p-4">
+          <div className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-2xl space-y-4 overflow-y-auto overscroll-contain rounded-2xl border-2 border-black bg-white p-4 neo-shadow sm:p-6">
             <h2 className="text-2xl font-bold font-heading">
               {editingLesson ? "Edit Lesson" : "Tambah Lesson Baru"}
             </h2>
@@ -440,7 +440,7 @@ export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavig
                 />
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
                 <div>
                   <label className="block text-sm font-bold mb-1">Status</label>
                   <select
@@ -475,18 +475,18 @@ export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavig
                 </div>
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t-2 border-gray-200">
+              <div className="flex flex-col-reverse gap-3 border-t-2 border-gray-200 pt-4 sm:flex-row sm:justify-end">
                 <button
                   type="button"
                   onClick={() => setShowModal(false)}
-                  className="px-4 py-2 border-2 border-black rounded-xl font-bold bg-gray-100 hover:bg-gray-200 cursor-pointer"
+                  className="min-h-11 w-full px-4 py-2 border-2 border-black rounded-xl font-bold bg-gray-100 hover:bg-gray-200 cursor-pointer sm:w-auto"
                 >
                   Batal
                 </button>
                 <button
                   type="submit"
                   disabled={submitting}
-                  className="px-4 py-2 border-2 border-black rounded-xl font-bold bg-pastel-mint neo-shadow-sm hover:opacity-90 disabled:opacity-50 cursor-pointer"
+                  className="min-h-11 w-full px-4 py-2 border-2 border-black rounded-xl font-bold bg-pastel-mint neo-shadow-sm hover:opacity-90 disabled:opacity-50 cursor-pointer sm:w-auto"
                 >
                   {submitting ? "Menyimpan..." : "Simpan Lesson"}
                 </button>
@@ -498,8 +498,8 @@ export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavig
 
       {/* DELETE CONFIRMATION MODAL */}
       {deletingId && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white border-2 border-black rounded-2xl p-6 max-w-md w-full neo-shadow space-y-4 text-left">
+        <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/50 p-3 sm:p-4">
+          <div className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-md space-y-4 overflow-y-auto overscroll-contain rounded-2xl border-2 border-black bg-white p-4 text-left neo-shadow sm:p-6">
             <div className="flex items-center gap-3 text-red-600">
               <AlertTriangle className="w-8 h-8" />
               <h3 className="text-xl font-bold font-heading">Konfirmasi Hapus Lesson</h3>
@@ -515,7 +515,7 @@ export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavig
               </div>
             )}
 
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex flex-col-reverse gap-3 pt-4 sm:flex-row sm:justify-end">
               <button
                 onClick={() => setDeletingId(null)}
                 className="px-4 py-2 border-2 border-black rounded-xl font-bold bg-gray-100 hover:bg-gray-200 cursor-pointer"

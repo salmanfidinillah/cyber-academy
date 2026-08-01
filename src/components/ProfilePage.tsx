@@ -41,7 +41,7 @@ export const ProfilePage: React.FC<ProfilePageProps> = ({ currentUser, onNavigat
   const provider = currentUser.providerIds?.[0] || "password";
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="mx-auto w-full min-w-0 max-w-4xl space-y-6">
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
         <div>
           <h1 className="text-3xl font-heading font-bold mb-2">Profil Pengguna</h1>

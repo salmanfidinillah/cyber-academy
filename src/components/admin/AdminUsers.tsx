@@ -40,7 +40,7 @@ export const AdminUsers: React.FC<AdminUsersProps> = ({ currentUser }) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6">
       <div>
         <h1 className="text-3xl font-heading font-bold">Manajemen Pengguna</h1>
         <p className="text-gray-600">Role dan status akun tersinkron dengan Firebase Authentication.</p>
@@ -48,10 +48,10 @@ export const AdminUsers: React.FC<AdminUsersProps> = ({ currentUser }) => {
       {error && <div className="p-3 bg-red-100 border-2 border-red-500 rounded-lg font-bold text-red-700">{error}</div>}
       <NeoCard className="p-4 flex items-center gap-3">
         <Search className="w-5 h-5" />
-        <input value={search} onChange={(event) => setSearch(event.target.value)} className="flex-1 outline-none font-bold" placeholder="Cari nama atau email..." />
+        <input value={search} onChange={(event) => setSearch(event.target.value)} className="min-w-0 flex-1 outline-none font-bold" placeholder="Cari nama atau email..." />
       </NeoCard>
       <NeoCard className="p-0 overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full min-w-[44rem] text-left">
           <thead><tr className="bg-gray-50 border-b-2 border-black">
             <th className="p-4">Pengguna</th><th className="p-4">Role</th><th className="p-4">Status</th><th className="p-4">Aksi</th>
           </tr></thead>
@@ -59,7 +59,7 @@ export const AdminUsers: React.FC<AdminUsersProps> = ({ currentUser }) => {
             {loading ? <tr><td colSpan={4} className="p-8 text-center font-bold">Memuat pengguna...</td></tr> :
               filtered.map((user) => (
                 <tr key={user.uid}>
-                  <td className="p-4"><div className="font-bold">{user.displayName || "Tanpa nama"}</div><div className="text-xs text-gray-500">{user.email}</div></td>
+                  <td className="p-4"><div className="font-bold">{user.displayName || "Tanpa nama"}</div><div className="break-all text-xs text-gray-500">{user.email}</div></td>
                   <td className="p-4 font-bold">{user.role}</td>
                   <td className="p-4"><span className={`px-2 py-1 rounded neo-border text-xs font-bold ${user.accountStatus === "active" ? "bg-pastel-mint" : "bg-pastel-peach"}`}>{user.accountStatus}</span></td>
                   <td className="p-4 flex gap-2">

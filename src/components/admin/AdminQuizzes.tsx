@@ -51,33 +51,33 @@ export const AdminQuizzes: React.FC<AdminQuizzesProps> = ({ currentUser, onNavig
   }, [quizzes, search, filter]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6">
+      <div className="flex min-w-0 flex-col items-start gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-3xl font-heading font-bold">Manajemen Quizzes</h1>
         <button 
             onClick={() => onNavigate("/admin/quizzes/new")}
-            className="flex items-center gap-2 p-3 bg-pastel-blue border-2 border-black rounded-xl font-bold neo-shadow-sm hover:bg-opacity-90 transition-all"
+            className="flex min-h-11 w-full items-center justify-center gap-2 rounded-xl border-2 border-black bg-pastel-blue p-3 font-bold neo-shadow-sm transition-all hover:bg-opacity-90 sm:w-auto"
         >
           <Plus className="w-5 h-5" />
           Tambah Baru
         </button>
       </div>
 
-      <NeoCard className="p-4 flex items-center gap-4">
-        <div className="flex-1 flex items-center gap-3 bg-white p-2 rounded-xl border-2 border-black w-full">
+      <NeoCard className="flex flex-col items-stretch gap-4 p-4 sm:flex-row sm:items-center">
+        <div className="flex min-w-0 w-full flex-1 items-center gap-3 rounded-xl border-2 border-black bg-white p-2">
           <Search className="w-5 h-5 text-gray-400" />
           <input 
             type="text" 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 outline-none font-bold bg-transparent"
+            className="min-w-0 flex-1 outline-none font-bold bg-transparent"
             placeholder="Cari berdasarkan title atau course ID..."
           />
         </div>
         <select 
             value={filter.status}
             onChange={(e) => setFilter({...filter, status: e.target.value})}
-            className="bg-white p-2 rounded-xl border-2 border-black font-bold outline-none"
+            className="w-full min-w-0 bg-white p-2 rounded-xl border-2 border-black font-bold outline-none sm:w-auto"
         >
             <option value="all">Semua Status</option>
             <option value="draft">Draft</option>
@@ -88,14 +88,14 @@ export const AdminQuizzes: React.FC<AdminQuizzesProps> = ({ currentUser, onNavig
 
       <NeoCard className="p-0 overflow-hidden overflow-x-auto">
         {error && (
-          <div className="m-4 flex items-center justify-between rounded-xl border-2 border-black bg-pastel-peach p-3 text-sm font-bold">
-            <span>{error}</span>
+          <div className="m-4 flex min-w-0 flex-col items-stretch gap-3 rounded-xl border-2 border-black bg-pastel-peach p-3 text-sm font-bold sm:flex-row sm:items-center sm:justify-between">
+            <span className="min-w-0 break-words [overflow-wrap:anywhere]">{error}</span>
             <button onClick={loadQuizzes} className="rounded-lg border-2 border-black bg-white px-3 py-1">Coba Lagi</button>
           </div>
         )}
         {loading && <div className="flex items-center justify-center gap-2 p-8 font-bold"><RefreshCw className="h-5 w-5 animate-spin" /> Memuat kuis...</div>}
         {!loading && (
-        <table className="w-full text-left">
+        <table className="w-full min-w-[44rem] text-left">
           <thead>
             <tr className="bg-gray-50 border-b-2 border-black">
               <th className="p-4 font-bold text-sm uppercase">Title</th>

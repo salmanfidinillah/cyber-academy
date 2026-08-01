@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "motion/react";
 import { evaluateMyBadgeState, fetchBadges } from "../services/achievementService";
 import { Badge, BadgeProgress, UserBadge, User } from "../types";
@@ -43,6 +43,7 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
   const [copiedIndex, setCopiedIndex] = useState(false);
   const [filter, setFilter] = useState<"all" | "unlocked" | "locked">("all");
   const [loadError, setLoadError] = useState("");
+  const badgeModalRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -65,6 +66,30 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
       active = false;
     };
   }, [currentUser]);
+
+  useEffect(() => {
+    if (!selectedBadge || typeof document === "undefined") return;
+
+    const originalOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setSelectedBadge(null);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    const focusFrame = window.requestAnimationFrame(() => {
+      badgeModalRef.current?.querySelector<HTMLElement>("button")?.focus();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [selectedBadge]);
 
   const isUnlocked = (badgeSlug: string) => {
     return userBadges.some(ub => ub.badgeSlug === badgeSlug);
@@ -98,9 +123,9 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
   };
 
   return (
-    <div id="badge-list-container" className="max-w-5xl mx-auto px-4 py-8">
+    <div id="badge-list-container" className="mx-auto w-full min-w-0 max-w-5xl px-0 py-4 sm:px-4 sm:py-8">
       {/* Header section with clean Friendly Pastel Neo-Brutalist Card */}
-      <div className="bg-[#B4F0D2] border-3 border-black p-6 md:p-8 rounded-xl shadow-[4px_4px_0px_0px_#000000] mb-8 relative overflow-hidden">
+      <div className="relative mb-8 overflow-hidden rounded-xl border-3 border-black bg-[#B4F0D2] p-4 shadow-[4px_4px_0px_0px_#000000] sm:p-6 md:p-8">
         <div className="relative z-10">
           <span className="bg-black text-[#B4F0D2] font-mono text-xs px-3 py-1 rounded-full uppercase font-bold tracking-wider">
             Sistem Pencapaian
@@ -123,8 +148,8 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
           {loadError}
         </div>
       )}
-      <div className="flex flex-col md:flex-row gap-4 justify-between items-center mb-8 bg-[#FFFDF8] border-3 border-black p-4 rounded-xl shadow-[4px_4px_0px_0px_#000000]">
-        <div className="flex items-center gap-4">
+      <div className="mb-8 flex min-w-0 flex-col items-stretch justify-between gap-4 rounded-xl border-3 border-black bg-[#FFFDF8] p-4 shadow-[4px_4px_0px_0px_#000000] md:flex-row md:items-center">
+        <div className="flex min-w-0 flex-col items-start gap-3 sm:flex-row sm:items-center sm:gap-4">
           <div className="flex flex-col">
             <span className="text-xs font-mono text-gray-500 uppercase tracking-wider">Sertifikasi & Progres</span>
             <div className="flex items-center gap-2 mt-1">
@@ -142,12 +167,12 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
         </div>
 
         {/* Filter buttons in Neo-Brutalist pill style */}
-        <div className="flex gap-2">
+        <div className="grid w-full grid-cols-1 gap-2 min-[390px]:grid-cols-3 md:flex md:w-auto">
           {(["all", "unlocked", "locked"] as const).map((type) => (
             <button
               key={type}
               onClick={() => setFilter(type)}
-              className={`px-3 py-1.5 text-xs font-bold border-2 border-black rounded shadow-[2px_2px_0px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer ${
+              className={`min-h-11 min-w-0 px-3 py-1.5 text-xs font-bold border-2 border-black rounded shadow-[2px_2px_0px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer ${
                 filter === type ? "bg-[#FFE696]" : "bg-white"
               }`}
             >
@@ -256,12 +281,13 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
       {/* Badge Detail Modal using clean Motion Animation */}
       <AnimatePresence>
         {selectedBadge && (
-          <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 backdrop-blur-xs">
+          <div className="fixed inset-0 z-50 flex items-center justify-center overflow-y-auto bg-black/60 p-3 backdrop-blur-xs sm:p-4" role="dialog" aria-modal="true" aria-labelledby="badge-detail-title">
             <motion.div
+              ref={badgeModalRef}
               initial={{ scale: 0.95, opacity: 0, y: 15 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.95, opacity: 0, y: 15 }}
-              className={`border-3 border-black w-full max-w-md rounded-2xl shadow-[6px_6px_0px_0px_#000000] p-6 relative overflow-hidden ${
+              className={`relative my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-md overflow-y-auto overscroll-contain rounded-2xl border-3 border-black p-4 shadow-[6px_6px_0px_0px_#000000] sm:p-6 ${
                 isUnlocked(selectedBadge.slug) 
                   ? PASTEL_BG_MAP[selectedBadge.badgeId] || "bg-pastel-mint" 
                   : "bg-white"
@@ -271,6 +297,7 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
               <button
                 onClick={() => setSelectedBadge(null)}
                 className="absolute top-4 right-4 bg-white border-2 border-black p-1.5 rounded-full hover:bg-gray-100 shadow-[2px_2px_0px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer"
+                aria-label="Tutup detail lencana"
               >
                 <X className="w-4 h-4 text-black" />
               </button>
@@ -284,7 +311,7 @@ export function BadgeList({ currentUser, onNavigate }: BadgeListProps) {
                   {selectedBadge.category}
                 </span>
 
-                <h2 className="text-2xl font-black text-black tracking-tight mb-2">
+                <h2 id="badge-detail-title" className="mb-2 break-words text-2xl font-black tracking-tight text-black [overflow-wrap:anywhere]">
                   {selectedBadge.title}
                 </h2>
 

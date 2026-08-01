@@ -151,9 +151,9 @@ export function CertificatePreview({ currentUser, onNavigate }: CertificatePrevi
   const requiredPassingScore = selectedPath?.level === "Advanced" ? 80 : selectedPath?.level === "Intermediate" ? 75 : 70;
 
   return (
-    <div id="certificate-preview-container" className="max-w-5xl mx-auto px-4 py-8">
+    <div id="certificate-preview-container" className="mx-auto w-full min-w-0 max-w-5xl px-0 py-4 sm:px-4 sm:py-8">
       {/* Banner / Header */}
-      <div className="bg-[#D6C8FF] border-3 border-black p-6 md:p-8 rounded-xl shadow-[4px_4px_0px_0px_#000000] mb-8 relative overflow-hidden">
+      <div className="relative mb-8 overflow-hidden rounded-xl border-3 border-black bg-[#D6C8FF] p-4 shadow-[4px_4px_0px_0px_#000000] sm:p-6 md:p-8">
         <div className="relative z-10">
           <span className="bg-black text-[#D6C8FF] font-mono text-xs px-3 py-1 rounded-full uppercase font-bold tracking-wider">
             Sertifikasi Akademik
@@ -186,22 +186,22 @@ export function CertificatePreview({ currentUser, onNavigate }: CertificatePrevi
               }`}
             >
               <span className="block text-xs uppercase">{path.level}</span>
-              <span className="block text-sm truncate">{path.title.replace(`${path.level}: `, "")}</span>
+              <span className="block break-words text-sm [overflow-wrap:anywhere]">{path.title.replace(`${path.level}: `, "")}</span>
             </button>
           );
         })}
       </div>
 
       {errorMsg && (
-        <div className="bg-red-100 border-2 border-red-500 p-4 rounded-xl font-bold text-red-700 flex items-center gap-3 shadow-[3px_3px_0px_0px_rgba(239,68,68,0.2)] mb-6 animate-shake">
+        <div className="mb-6 flex min-w-0 items-start gap-3 rounded-xl border-2 border-red-500 bg-red-100 p-4 font-bold text-red-700 shadow-[3px_3px_0px_0px_rgba(239,68,68,0.2)] animate-shake">
           <XCircle className="w-5 h-5 shrink-0" />
-          <span>{errorMsg}</span>
+          <span className="min-w-0 break-words [overflow-wrap:anywhere]">{errorMsg}</span>
         </div>
       )}
 
       {isGenerating ? (
         /* Dynamic Animated Loading State */
-        <div className="bg-white border-3 border-black rounded-2xl p-12 text-center shadow-[4px_4px_0px_0px_#000000] my-8 max-w-lg mx-auto">
+        <div className="mx-auto my-8 max-w-lg rounded-2xl border-3 border-black bg-white p-6 text-center shadow-[4px_4px_0px_0px_#000000] sm:p-12">
           <Loader2 className="w-16 h-16 text-pastel-lavender animate-spin mx-auto mb-6" />
           <h2 className="text-xl font-black text-black mb-4">Menerbitkan Sertifikat Anda</h2>
           
@@ -236,18 +236,19 @@ export function CertificatePreview({ currentUser, onNavigate }: CertificatePrevi
         /* High-fidelity Live Landscape Preview */
         <div className="space-y-8">
           <div className="bg-white border-3 border-black rounded-xl p-4 md:p-6 shadow-[6px_6px_0px_0px_#000000]">
-            <div className="flex justify-between items-center mb-4 border-b-2 border-black pb-3">
-              <div className="flex items-center gap-2">
+            <div className="mb-4 flex min-w-0 flex-col items-start gap-3 border-b-2 border-black pb-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex min-w-0 items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-pastel-mint" />
                 <span className="font-black text-sm uppercase tracking-wide">Sertifikat Kelulusan Valid</span>
               </div>
-              <div className="bg-[#FFE696] border-2 border-black px-3 py-1 rounded text-xs font-mono font-bold shadow-[2px_2px_0px_0px_#000000]">
+              <div className="max-w-full break-all rounded border-2 border-black bg-[#FFE696] px-3 py-1 font-mono text-xs font-bold shadow-[2px_2px_0px_0px_#000000]">
                 {activeCert.certificateCode}
               </div>
             </div>
 
             {/* Interactive Certificate Paper Frame */}
-            <div className="border-3 border-black bg-[#FFFDF8] p-6 md:p-10 rounded-lg shadow-inner relative overflow-hidden flex flex-col justify-between aspect-[1.414/1] w-full max-w-4xl mx-auto">
+            <div className="-mx-1 overflow-x-auto p-1 pb-3" aria-label="Preview sertifikat dapat digulir horizontal pada layar kecil">
+            <div className="relative mx-auto flex aspect-[1.414/1] w-full min-w-[40rem] max-w-4xl flex-col justify-between overflow-hidden rounded-lg border-3 border-black bg-[#FFFDF8] p-6 shadow-inner md:min-w-0 md:p-10">
               {/* Outer decorative line */}
               <div className="absolute inset-2 border border-black/20 pointer-events-none rounded"></div>
               
@@ -318,20 +319,21 @@ export function CertificatePreview({ currentUser, onNavigate }: CertificatePrevi
               <div className="absolute top-4 left-4 w-4 h-4 bg-[#B4F0D2] border border-black shadow-[1px_1px_0px_rgba(0,0,0,1)]"></div>
               <div className="absolute top-4 right-4 w-4 h-4 bg-[#FFC8C8] border border-black shadow-[1px_1px_0px_rgba(0,0,0,1)]"></div>
             </div>
+            </div>
           </div>
 
           {/* Download & Share Actions Card */}
-          <div className="bg-[#FFFDF8] border-3 border-black p-6 rounded-xl shadow-[4px_4px_0px_0px_#000000] flex flex-col md:flex-row justify-between items-center gap-4">
+          <div className="flex flex-col items-stretch justify-between gap-4 rounded-xl border-3 border-black bg-[#FFFDF8] p-4 shadow-[4px_4px_0px_0px_#000000] sm:p-6 md:flex-row md:items-center">
             <div className="text-center md:text-left">
               <h3 className="font-bold text-lg mb-1">Unduh & Bagikan Sertifikat Anda</h3>
               <p className="text-gray-500 text-xs">Simpan salinan cetak landscape PDF atau kirim link verifikasi ke jejaring sosial Anda.</p>
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="grid w-full grid-cols-1 gap-3 sm:flex sm:flex-wrap md:w-auto">
               {/* Salin link */}
               <button
                 onClick={handleCopyLink}
-                className="bg-white hover:bg-gray-100 text-black font-bold border-2 border-black py-2 px-4 rounded shadow-[2px_2px_0px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer flex items-center gap-2 text-xs"
+                className="flex min-h-11 w-full items-center justify-center gap-2 rounded border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black shadow-[2px_2px_0px_0px_#000000] transition-all hover:bg-gray-100 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer sm:w-auto"
               >
                 {copiedLink ? <Check className="w-4 h-4 text-pastel-mint" /> : <Copy className="w-4 h-4" />}
                 {copiedLink ? "Link Disalin!" : "Salin Link Verifikasi"}
@@ -340,7 +342,7 @@ export function CertificatePreview({ currentUser, onNavigate }: CertificatePrevi
               {/* Verifikasi route */}
               <button
                 onClick={() => onNavigate(`/verify/certificate/${activeCert.certificateCode}`)}
-                className="bg-white hover:bg-gray-100 text-black font-bold border-2 border-black py-2 px-4 rounded shadow-[2px_2px_0px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer flex items-center gap-2 text-xs"
+                className="flex min-h-11 w-full items-center justify-center gap-2 rounded border-2 border-black bg-white px-4 py-2 text-xs font-bold text-black shadow-[2px_2px_0px_0px_#000000] transition-all hover:bg-gray-100 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer sm:w-auto"
               >
                 <ExternalLink className="w-4 h-4" />
                 Uji Halaman Verifikasi
@@ -350,7 +352,7 @@ export function CertificatePreview({ currentUser, onNavigate }: CertificatePrevi
               <button
                 onClick={handleDownloadPDF}
                 disabled={isDownloading}
-                className="bg-[#D6C8FF] hover:bg-[#c3b4fa] text-black font-bold border-2 border-black py-2 px-4 rounded shadow-[2px_2px_0px_0px_#000000] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none transition-all cursor-pointer flex items-center gap-2 text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex min-h-11 w-full items-center justify-center gap-2 rounded border-2 border-black bg-[#D6C8FF] px-4 py-2 text-xs font-bold text-black shadow-[2px_2px_0px_0px_#000000] transition-all hover:bg-[#c3b4fa] active:translate-x-0.5 active:translate-y-0.5 active:shadow-none cursor-pointer disabled:cursor-not-allowed disabled:opacity-50 sm:w-auto"
               >
                 <FileDown className="w-4 h-4" />
                 {isDownloading ? "Mengunduh PDF..." : "Unduh PDF Sertifikat"}
@@ -360,10 +362,10 @@ export function CertificatePreview({ currentUser, onNavigate }: CertificatePrevi
         </div>
       ) : eligibility?.isEligible ? (
         /* Unclaimed eligible state */
-        <div className="bg-white border-3 border-black rounded-2xl p-8 md:p-12 shadow-[4px_4px_0px_0px_#000000] my-8 max-w-xl mx-auto text-left">
+        <div className="mx-auto my-8 max-w-xl rounded-2xl border-3 border-black bg-white p-5 text-left shadow-[4px_4px_0px_0px_#000000] sm:p-8 md:p-12">
           <div className="text-center mb-6">
             <Award className="w-20 h-20 text-[#FFE696] animate-bounce mx-auto mb-4" />
-            <h2 className="text-3xl font-black text-black mb-2">Selamat, Anda Lulus!</h2>
+            <h2 className="mb-2 text-2xl font-black text-black sm:text-3xl">Selamat, Anda Lulus!</h2>
             <p className="text-gray-600 font-medium text-sm md:text-base leading-relaxed">
               Anda telah berhasil menyelesaikan seluruh materi dan lulus evaluasi kelulusan pada <b>{eligibility.learningPathTitle}</b>.
             </p>
@@ -411,7 +413,7 @@ export function CertificatePreview({ currentUser, onNavigate }: CertificatePrevi
                     )}
                   </div>
                   <div className="flex-grow">
-                    <div className="flex justify-between items-center mb-1">
+                    <div className="mb-1 flex min-w-0 flex-wrap items-center justify-between gap-2">
                       <h4 className="font-bold text-sm text-black">Materi Belajar Diselesaikan</h4>
                       <span className="text-xs font-mono font-bold text-gray-500">
                         {eligibility?.lessonsCompleted} / {eligibility?.totalLessons}
@@ -436,7 +438,7 @@ export function CertificatePreview({ currentUser, onNavigate }: CertificatePrevi
                     )}
                   </div>
                   <div className="flex-grow">
-                    <div className="flex justify-between items-center mb-1">
+                    <div className="mb-1 flex min-w-0 flex-wrap items-center justify-between gap-2">
                       <h4 className="font-bold text-sm text-black">Evaluasi Ujian Kuis Lulus</h4>
                       <span className="text-xs font-mono font-bold text-gray-500">
                         {eligibility?.quizzesPassed} / {eligibility?.totalQuizzes} (Skor &gt;= {requiredPassingScore})
@@ -461,7 +463,7 @@ export function CertificatePreview({ currentUser, onNavigate }: CertificatePrevi
                     )}
                   </div>
                   <div className="flex-grow">
-                    <div className="flex justify-between items-center mb-1">
+                    <div className="mb-1 flex min-w-0 flex-wrap items-center justify-between gap-2">
                       <h4 className="font-bold text-sm text-black">Status Selesai Seluruh Kelas</h4>
                       <span className="text-xs font-mono font-bold text-gray-500">
                         {eligibility?.coursesCompleted} / {eligibility?.totalCourses} Kelas

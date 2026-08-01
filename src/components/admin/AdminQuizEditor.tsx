@@ -197,12 +197,12 @@ export const AdminQuizEditor: React.FC<Props> = ({ onNavigate }) => {
   }
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6 pb-16">
+    <div className="mx-auto w-full min-w-0 max-w-5xl space-y-6 pb-16">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <NeoButton variant="secondary" onClick={() => onNavigate("/admin/quizzes")}>
           <ArrowLeft className="mr-2 h-4 w-4" /> Kembali
         </NeoButton>
-        <h1 className="font-heading text-2xl font-extrabold">
+        <h1 className="min-w-0 break-words font-heading text-2xl font-extrabold [overflow-wrap:anywhere]">
           {isNew ? "Tambah Kuis" : `Editor Kuis: ${quiz.title || id}`}
         </h1>
       </div>
@@ -251,8 +251,8 @@ export const AdminQuizEditor: React.FC<Props> = ({ onNavigate }) => {
           <span>XP Kelulusan Pertama</span>
           <input type="number" min={0} max={1000} className="w-full rounded-xl border-2 border-black p-3" value={quiz.xpReward || 0} onChange={(event) => setQuiz({ ...quiz, xpReward: Number(event.target.value) })} />
         </label>
-        <div className="md:col-span-2 flex justify-end">
-          <NeoButton variant="primary" disabled={saving || !quiz.courseId || !quiz.title || !quiz.description} onClick={saveQuiz}>
+        <div className="flex md:col-span-2 md:justify-end">
+          <NeoButton variant="primary" disabled={saving || !quiz.courseId || !quiz.title || !quiz.description} onClick={saveQuiz} className="w-full sm:w-auto">
             <Save className="mr-2 h-4 w-4" /> {saving ? "Menyimpan..." : "Simpan Kuis"}
           </NeoButton>
         </div>
@@ -260,21 +260,21 @@ export const AdminQuizEditor: React.FC<Props> = ({ onNavigate }) => {
 
       {!isNew && id && (
         <>
-          <div className="flex items-center justify-between">
-            <div>
+          <div className="flex min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div className="min-w-0">
               <h2 className="font-heading text-xl font-extrabold">Daftar Pertanyaan</h2>
               <p className="text-xs font-semibold text-brand-muted">{questions.length} pertanyaan · {selectedCourse?.title}</p>
             </div>
-            <NeoButton variant="secondary" onClick={resetQuestionForm}><Plus className="mr-2 h-4 w-4" /> Pertanyaan Baru</NeoButton>
+            <NeoButton variant="secondary" onClick={resetQuestionForm} className="w-full sm:w-auto"><Plus className="mr-2 h-4 w-4" /> Pertanyaan Baru</NeoButton>
           </div>
 
           <div className="space-y-3">
             {questions.length === 0 && <NeoCard className="p-6 text-center text-sm font-bold">Belum ada pertanyaan.</NeoCard>}
             {questions.map((item) => (
-              <NeoCard key={item.id} className="flex items-start justify-between gap-4 p-4">
-                <div>
+              <NeoCard key={item.id} className="flex min-w-0 flex-col items-stretch gap-4 p-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <p className="text-xs font-bold text-brand-muted">Nomor {item.order} · {item.status}</p>
-                  <h3 className="font-bold">{item.questionText}</h3>
+                  <h3 className="break-words font-bold [overflow-wrap:anywhere]">{item.questionText}</h3>
                 </div>
                 <div className="flex gap-2">
                   <button className="rounded-lg border-2 border-black bg-pastel-yellow p-2 font-bold" onClick={() => editQuestion(item)}>Edit</button>
@@ -294,9 +294,9 @@ export const AdminQuizEditor: React.FC<Props> = ({ onNavigate }) => {
             />
             <div className="grid gap-3 md:grid-cols-2">
               {(question.options || blankOptions()).map((option, index) => (
-                <div key={index} className="flex gap-2">
+                <div key={index} className="flex min-w-0 gap-2">
                   <input className="w-16 rounded-xl border-2 border-black p-3 font-mono" value={option.id} onChange={(event) => updateOption(index, "id", event.target.value)} />
-                  <input className="flex-1 rounded-xl border-2 border-black p-3" placeholder={`Opsi ${index + 1}`} value={option.text} onChange={(event) => updateOption(index, "text", event.target.value)} />
+                  <input className="min-w-0 flex-1 rounded-xl border-2 border-black p-3" placeholder={`Opsi ${index + 1}`} value={option.text} onChange={(event) => updateOption(index, "text", event.target.value)} />
                 </div>
               ))}
             </div>
@@ -332,9 +332,9 @@ export const AdminQuizEditor: React.FC<Props> = ({ onNavigate }) => {
               value={question.recommendedLessonId || ""}
               onChange={(event) => setQuestion({ ...question, recommendedLessonId: event.target.value || null })}
             />
-            <div className="flex justify-end gap-2">
-              {editingQuestionId && <NeoButton variant="secondary" onClick={resetQuestionForm}>Batal Edit</NeoButton>}
-              <NeoButton variant="primary" disabled={saving} onClick={saveQuestion}><Save className="mr-2 h-4 w-4" /> Simpan Pertanyaan</NeoButton>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+              {editingQuestionId && <NeoButton variant="secondary" onClick={resetQuestionForm} className="w-full sm:w-auto">Batal Edit</NeoButton>}
+              <NeoButton variant="primary" disabled={saving} onClick={saveQuestion} className="w-full sm:w-auto"><Save className="mr-2 h-4 w-4" /> Simpan Pertanyaan</NeoButton>
             </div>
           </NeoCard>
         </>

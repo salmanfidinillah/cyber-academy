@@ -113,8 +113,8 @@ export const QuizResult: React.FC<QuizResultProps> = ({
   const recommendedLessons = courseLessons.filter(l => recommendedLessonIds.includes(l.id));
 
   return (
-    <div className="max-w-3xl mx-auto my-8 px-4 animate-fadeIn font-sans text-brand-text">
-      <div className="flex justify-between items-center mb-6 text-xs font-bold text-brand-muted">
+    <div className="mx-auto my-6 w-full min-w-0 max-w-3xl px-0 font-sans text-brand-text animate-fadeIn sm:my-8 sm:px-4">
+      <div className="mb-6 flex min-w-0 flex-col items-start gap-2 text-xs font-bold text-brand-muted sm:flex-row sm:items-center sm:justify-between">
         <button
           onClick={() => onNavigate(`/learn/courses/${courseSlug}`)}
           className="flex items-center space-x-1 font-bold hover:text-brand-text transition-colors"
@@ -122,7 +122,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
           <ArrowLeft className="w-4 h-4" />
           <span>Kembali ke Detail Kelas</span>
         </button>
-        <span className="font-mono text-xs text-brand-muted uppercase">ID: {attempt.attemptId}</span>
+        <span className="max-w-full break-all font-mono text-xs uppercase text-brand-muted">ID: {attempt.attemptId}</span>
       </div>
 
       <NeoCard bgColor="bg-white" className="p-6 sm:p-8 text-center space-y-6 mb-8">
@@ -207,15 +207,15 @@ export const QuizResult: React.FC<QuizResultProps> = ({
                 <button
                   key={lesson.id}
                   onClick={() => handleViewRecommendation(lesson.slug)}
-                  className="w-full text-left p-3.5 bg-white hover:bg-brand-surface/30 border-2 border-brand-border rounded-xl transition-all flex items-center justify-between group"
+                  className="group flex w-full min-w-0 items-center justify-between gap-2 rounded-xl border-2 border-brand-border bg-white p-3.5 text-left transition-all hover:bg-brand-surface/30"
                 >
-                  <div className="flex items-center space-x-3">
+                  <div className="flex min-w-0 items-center gap-3">
                     <div className="w-8 h-8 rounded-lg border-2 border-brand-border bg-pastel-blue flex items-center justify-center font-bold text-xs shrink-0">
                       📖
                     </div>
-                    <div>
-                      <h5 className="font-bold text-xs text-brand-text group-hover:underline">{lesson.title}</h5>
-                      <p className="text-[10px] text-brand-muted mt-0.5">{lesson.objective.substring(0, 75)}...</p>
+                    <div className="min-w-0">
+                      <h5 className="break-words text-xs font-bold text-brand-text group-hover:underline [overflow-wrap:anywhere]">{lesson.title}</h5>
+                      <p className="mt-0.5 break-words text-[10px] text-brand-muted [overflow-wrap:anywhere]">{lesson.objective.substring(0, 75)}...</p>
                     </div>
                   </div>
                   <ChevronRight className="w-4 h-4 text-brand-muted group-hover:translate-x-1 transition-transform" />
@@ -227,7 +227,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
               <div className="text-[10px] text-brand-muted font-bold">
                 <span>Pelajari rekomendasi di atas sebelum mencoba kembali</span>
               </div>
-              <div className="flex gap-2 w-full sm:w-auto">
+              <div className="grid w-full grid-cols-1 gap-2 min-[390px]:grid-cols-2 sm:flex sm:w-auto">
                 <NeoButton
                   variant="mint"
                   onClick={handleStartRemedialAi}

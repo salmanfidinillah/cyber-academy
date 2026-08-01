@@ -28,7 +28,7 @@ export const NeoCard: React.FC<NeoCardProps> = ({
 
   return (
     <div
-      className={`neo-border rounded-[20px] p-5 sm:p-6 ${bgColor} ${shadowClass} ${interactiveClass} ${className}`}
+      className={`min-w-0 max-w-full neo-border rounded-[20px] p-5 sm:p-6 ${bgColor} ${shadowClass} ${interactiveClass} ${className}`}
       {...props}
     >
       {children}

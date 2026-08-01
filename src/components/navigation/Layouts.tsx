@@ -22,7 +22,7 @@ export const PublicLayout: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-[#FFFDF8] text-brand-text font-sans selection:bg-pastel-yellow selection:text-brand-text">
+    <div className="flex min-h-screen min-w-0 flex-col overflow-x-clip bg-[#FFFDF8] text-brand-text font-sans selection:bg-pastel-yellow selection:text-brand-text">
       <Navbar 
         currentRoute={location.pathname} 
         onNavigate={(route) => navigate(route)} 
@@ -35,7 +35,7 @@ export const PublicLayout: React.FC = () => {
             <LoadingBoundary message="Memproses permintaan Anda..." />
           </div>
         ) : (
-          <div className="animate-fadeIn">
+          <div className="min-w-0 max-w-full animate-fadeIn">
             <Outlet />
           </div>
         )}
@@ -70,7 +70,7 @@ export const UserLayout: React.FC = () => {
           <LoadingBoundary message="Memproses permintaan Anda..." />
         </div>
       ) : (
-        <div className="animate-fadeIn">
+        <div className="min-w-0 max-w-full animate-fadeIn">
           <Outlet />
         </div>
       )}
@@ -103,7 +103,7 @@ export const AdminLayout: React.FC = () => {
           <LoadingBoundary message="Memproses permintaan Anda..." />
         </div>
       ) : (
-        <div className="animate-fadeIn">
+        <div className="min-w-0 max-w-full animate-fadeIn">
           <Outlet />
         </div>
       )}

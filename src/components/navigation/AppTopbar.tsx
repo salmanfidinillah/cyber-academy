@@ -17,7 +17,7 @@ export const AppTopbar: React.FC<AppTopbarProps> = ({
   subtitle = "Belajar siber lebih aman",
 }) => {
   return (
-    <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b-4 border-brand-border bg-[#FFFDF8] px-4 py-2 md:hidden">
+    <header className="sticky top-0 z-30 flex min-h-16 items-center justify-between gap-3 border-b-4 border-brand-border bg-[#FFFDF8] px-4 py-2 lg:hidden">
       <div className="flex min-w-0 items-center gap-3">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-xl border-[3px] border-black bg-pastel-mint shadow-[2px_2px_0_0_#111111]">
           <ShieldCheck className="size-5" aria-hidden="true" />

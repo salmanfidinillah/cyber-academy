@@ -82,7 +82,7 @@ export const MobileSidebarDrawer: React.FC<MobileSidebarDrawerProps> = ({ isOpen
   };
 
   return (
-    <div className="fixed inset-0 z-50 md:hidden">
+    <div className="fixed inset-0 z-50 lg:hidden">
       <div
         className="sidebar-overlay-enter absolute inset-0 bg-black/55"
         onMouseDown={onClose}
@@ -95,7 +95,7 @@ export const MobileSidebarDrawer: React.FC<MobileSidebarDrawerProps> = ({ isOpen
         aria-modal="true"
         aria-label="Menu navigasi Cyber Academy"
         tabIndex={-1}
-        className="sidebar-drawer-enter fixed inset-y-0 left-0 z-50 w-[min(85vw,20rem)] overflow-hidden border-r-4 border-black bg-[#FFFDF8] shadow-[8px_0_0_0_#111111] outline-none"
+        className="sidebar-drawer-enter fixed inset-y-0 left-0 z-50 w-[min(90vw,20rem)] overflow-hidden border-r-4 border-black bg-[#FFFDF8] shadow-[8px_0_0_0_#111111] outline-none"
       >
         <button
           type="button"

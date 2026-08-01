@@ -42,7 +42,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onN
   }, [currentUser.uid]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6">
       <div className="mb-8">
         <h1 className="text-3xl font-heading font-bold mb-2">Admin Dashboard</h1>
         <p className="text-gray-600">Ringkasan statistik dan aktivitas platform.</p>
@@ -55,7 +55,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onN
         </div>
       )}
 
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 md:grid-cols-3">
         {[
           { icon: Library, label: "Total Learning Path", value: stats.learningPaths },
           { icon: BookOpen, label: "Course Published", value: stats.coursesPublished },
@@ -97,7 +97,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({ currentUser, onN
         </div>
         <div>
           <h3 className="text-xl font-heading font-bold mt-10 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4 min-[390px]:grid-cols-2">
             {[
               { label: "Lihat Pengguna", route: "/admin/users" },
               { label: "Kelola Learning Paths", route: "/admin/learning-paths" },

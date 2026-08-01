@@ -111,6 +111,26 @@ html, body {
   overflow-x: hidden;
 }
 
+#root {
+  min-width: 0;
+  max-width: 100%;
+}
+
+img,
+svg,
+video,
+canvas,
+iframe {
+  max-width: 100%;
+}
+
+button,
+input,
+select,
+textarea {
+  max-width: 100%;
+}
+
 h1, h2, h3, h4, h5, h6 {
   font-family: "Fredoka", sans-serif;
   color: #111111;

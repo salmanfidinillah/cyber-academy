@@ -34,7 +34,7 @@ export const AdminBadges: React.FC<AdminBadgesProps> = () => {
   const legacyBadges = badges.filter((badge) => badge.isLegacy || badge.status !== "active");
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <h1 className="text-3xl font-heading font-bold">Manajemen Badges</h1>
@@ -49,7 +49,7 @@ export const AdminBadges: React.FC<AdminBadgesProps> = () => {
       {error && <div className="p-3 bg-red-100 border-2 border-red-500 rounded-lg font-bold text-red-700">{error}</div>}
 
       <NeoCard className="p-0 overflow-hidden overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full min-w-[38rem] text-left">
           <thead>
             <tr className="bg-gray-50 border-b-2 border-black">
               <th className="p-4 font-bold text-sm uppercase">Title</th>
