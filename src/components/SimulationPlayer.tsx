@@ -170,7 +170,7 @@ export function SimulationPlayer({ currentUser, simulationId, onNavigate }: Simu
   }
 
   return (
-    <main className="max-w-5xl mx-auto px-4 py-6 sm:py-10 text-brand-text overflow-x-hidden">
+    <main className="mx-auto w-full min-w-0 max-w-5xl overflow-x-clip py-6 text-brand-text sm:py-10">
       <button
         className="mb-5 inline-flex items-center gap-2 font-extrabold hover:underline focus-visible:outline-4 focus-visible:outline-blue-500"
         onClick={exitSimulation}
@@ -188,7 +188,7 @@ export function SimulationPlayer({ currentUser, simulationId, onNavigate }: Simu
             <h1 className="font-heading font-extrabold text-3xl sm:text-5xl mt-4 max-w-3xl">{definition.title}</h1>
             <p className="mt-3 max-w-2xl font-semibold leading-relaxed">{definition.shortDescription}</p>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
+            <div className="mt-6 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-4">
               {[
                 [Clock3, `${definition.estimatedMinutes} menit`],
                 [Target, `${definition.scenarios.length} tahap`],
@@ -344,7 +344,7 @@ export function SimulationPlayer({ currentUser, simulationId, onNavigate }: Simu
             </p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mt-6">
+          <div className="mt-6 grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 lg:grid-cols-4">
             {[
               ["Status", result.passed ? "Lulus" : "Ulangi"],
               ["XP diperoleh", result.xpEarned > 0 ? `+${result.xpEarned} XP` : result.alreadyRewarded ? "Sudah diberikan" : "0 XP"],

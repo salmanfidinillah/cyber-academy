@@ -347,7 +347,7 @@ export const LessonDetail: React.FC<LessonDetailProps> = ({
 
       {showCelebration && (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-[#111111]/45 p-4 animate-in fade-in duration-200"
+          className="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-[#111111]/45 p-3 animate-in fade-in duration-200 sm:p-4"
           role="dialog"
           aria-modal="true"
           aria-labelledby="lesson-complete-title"
@@ -355,7 +355,7 @@ export const LessonDetail: React.FC<LessonDetailProps> = ({
           <NeoCard
             bgColor="bg-brand-surface"
             shadowSize="lg"
-            className="w-full max-w-md space-y-6 p-6 text-center animate-in zoom-in-95 duration-200 sm:p-8"
+            className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-md space-y-5 overflow-y-auto overscroll-contain p-5 text-center animate-in zoom-in-95 duration-200 sm:space-y-6 sm:p-8"
           >
             <div className="mx-auto flex size-16 rotate-[-3deg] items-center justify-center rounded-full border-3 border-brand-border bg-pastel-mint text-3xl shadow-md" aria-hidden="true">
               🎉
@@ -371,7 +371,7 @@ export const LessonDetail: React.FC<LessonDetailProps> = ({
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:gap-4">
               <div className="flex flex-col justify-center rounded-2xl border-2 border-brand-border bg-pastel-yellow p-3 neo-shadow-sm">
                 <span className="font-heading text-[10px] font-bold uppercase tracking-wider text-brand-muted">
                   Klaim Skor

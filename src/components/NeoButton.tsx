@@ -36,7 +36,7 @@ export const NeoButton: React.FC<NeoButtonProps> = ({
 
   return (
     <button
-      className={`inline-flex items-center justify-center text-[#111111] font-heading select-none text-center outline-none focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-2 ${bgClass} ${sizeClass} ${borderAndShadow} ${className}`}
+      className={`inline-flex min-w-0 max-w-full items-center justify-center whitespace-normal break-words text-[#111111] font-heading select-none text-center outline-none focus-visible:ring-4 focus-visible:ring-black focus-visible:ring-offset-2 ${bgClass} ${sizeClass} ${borderAndShadow} ${className}`}
       {...props}
     >
       {children}

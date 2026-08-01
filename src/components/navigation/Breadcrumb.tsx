@@ -24,19 +24,19 @@ export const Breadcrumb: React.FC<BreadcrumbProps> = ({ items, onNavigate }) => 
   };
 
   return (
-    <nav className="flex items-center space-x-2 text-sm font-bold text-gray-600 mb-4" aria-label="Breadcrumb">
+    <nav className="mb-4 flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 text-sm font-bold text-gray-600" aria-label="Breadcrumb">
       {items.map((item, index) => (
         <React.Fragment key={index}>
-          {index > 0 && <ChevronRight className="w-4 h-4 text-gray-400" />}
+          {index > 0 && <ChevronRight className="h-4 w-4 shrink-0 text-gray-400" />}
           {item.route ? (
             <button
               onClick={() => handleClick(item.route!)}
-              className="hover:text-black transition-colors cursor-pointer"
+              className="min-w-0 break-words text-left transition-colors hover:text-black cursor-pointer"
             >
               {item.label}
             </button>
           ) : (
-            <span className="text-black">{item.label}</span>
+            <span className="min-w-0 break-words text-black">{item.label}</span>
           )}
         </React.Fragment>
       ))}

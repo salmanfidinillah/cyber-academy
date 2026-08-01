@@ -66,7 +66,7 @@ export const SimulationsLanding = ({ currentUser, onNavigate }: SimulationsLandi
   }, [attempts]);
 
   return (
-    <main className="max-w-6xl mx-auto py-8 px-4 animate-fadeIn text-brand-text">
+    <main className="mx-auto w-full min-w-0 max-w-6xl py-6 text-brand-text animate-fadeIn sm:py-8">
       <section className="bg-pastel-blue border-3 border-black rounded-[28px] p-6 sm:p-8 neo-shadow relative overflow-hidden">
         <div className="absolute -right-12 -top-12 w-44 h-44 bg-pastel-yellow border-3 border-black rounded-full opacity-70" aria-hidden="true" />
         <div className="relative max-w-3xl">
@@ -124,7 +124,7 @@ export const SimulationsLanding = ({ currentUser, onNavigate }: SimulationsLandi
                 <h3 className="font-heading font-extrabold text-xl mt-5">{simulation.title}</h3>
                 <p className="text-sm font-semibold leading-relaxed mt-2">{simulation.shortDescription}</p>
 
-                <div className="grid grid-cols-3 gap-2 mt-5 text-xs font-extrabold">
+                <div className="mt-5 grid grid-cols-1 gap-2 text-xs font-extrabold min-[360px]:grid-cols-3">
                   <span className="bg-white/80 border border-black rounded-lg p-2 flex items-center gap-1"><Target className="w-3 h-3" />{simulation.difficulty}</span>
                   <span className="bg-white/80 border border-black rounded-lg p-2 flex items-center gap-1"><Clock3 className="w-3 h-3" />{simulation.estimatedMinutes} menit</span>
                   <span className="bg-white/80 border border-black rounded-lg p-2 flex items-center gap-1"><ShieldCheck className="w-3 h-3" />+{simulation.xpReward} XP</span>

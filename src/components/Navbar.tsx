@@ -43,17 +43,17 @@ export const Navbar: React.FC<NavbarProps> = ({
 
   return (
     <nav className="sticky top-0 z-50 bg-[#FFFDF8] border-b-4 border-brand-border py-3 sm:py-4 px-4 sm:px-6">
-      <div className="max-w-7xl mx-auto flex items-center justify-between">
+      <div className="mx-auto flex min-w-0 max-w-7xl items-center justify-between gap-3">
         {/* Logo / Branding */}
         <div
           onClick={() => handleNavClick("home")}
-          className="flex items-center space-x-2.5 cursor-pointer select-none bg-pastel-mint px-3.5 py-1.5 rounded-xl neo-border neo-shadow-sm hover:translate-y-[-2px] hover:neo-shadow-md transition-all duration-150"
+          className="flex min-w-0 items-center gap-2.5 cursor-pointer select-none bg-pastel-mint px-3 py-1.5 rounded-xl neo-border neo-shadow-sm hover:translate-y-[-2px] hover:neo-shadow-md transition-all duration-150 sm:px-3.5"
         >
           <div className="w-7 h-7 bg-white rounded-full border-2 border-brand-border flex items-center justify-center">
             <Shield className="w-4 h-4 text-brand-text fill-pastel-mint" />
           </div>
-          <span className="font-heading font-bold text-base sm:text-lg tracking-tight">
-            Cyber Academy <span className="bg-[#111111] text-pastel-mint px-1.5 py-0.2 rounded ml-1 text-xs">AI</span>
+          <span className="min-w-0 truncate font-heading text-sm font-bold tracking-tight min-[360px]:text-base sm:text-lg">
+            Cyber Academy <span className="ml-1 rounded bg-[#111111] px-1.5 py-0.2 text-xs text-pastel-mint">AI</span>
           </span>
         </div>
 
@@ -144,7 +144,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Drawer Overlay */}
       {isMobileMenuOpen && (
-        <div className="absolute top-[100%] left-0 right-0 bg-[#FFFDF8] border-b-4 border-brand-border p-5 md:hidden animate-in fade-in slide-in-from-top-4 duration-200">
+        <div className="absolute left-0 right-0 top-[100%] max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-b-4 border-brand-border bg-[#FFFDF8] p-4 animate-in fade-in slide-in-from-top-4 duration-200 md:hidden sm:p-5">
           <div className="flex flex-col space-y-4">
             {/* Links list */}
             <div className="flex flex-col space-y-2 border-b-2 border-brand-border pb-4">
@@ -174,15 +174,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="flex flex-col space-y-3 pt-1">
               {currentUser ? (
                 <div className="space-y-3">
-                  <div className="flex items-center space-x-3 bg-white border-2 border-brand-border p-3 rounded-xl neo-shadow-sm">
+                  <div className="flex min-w-0 items-center gap-3 bg-white border-2 border-brand-border p-3 rounded-xl neo-shadow-sm">
                     <img
                       src={currentUser.photoURL || `https://api.dicebear.com/7.x/pixel-art/svg?seed=${encodeURIComponent(currentUser.displayName)}`}
                       alt={currentUser.displayName}
                       className="w-10 h-10 rounded-lg border border-brand-border bg-white"
                     />
-                    <div>
-                      <h4 className="font-heading font-bold text-sm text-brand-text">{currentUser.displayName}</h4>
-                      <p className="text-xs text-brand-muted font-semibold">{currentUser.email}</p>
+                    <div className="min-w-0">
+                      <h4 className="break-words font-heading text-sm font-bold text-brand-text [overflow-wrap:anywhere]">{currentUser.displayName}</h4>
+                      <p className="break-all text-xs font-semibold text-brand-muted">{currentUser.email}</p>
                     </div>
                   </div>
                   <NeoButton
@@ -232,4 +232,3 @@ export const Navbar: React.FC<NavbarProps> = ({
     </nav>
   );
 };
-

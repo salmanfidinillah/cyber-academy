@@ -40,27 +40,27 @@ export const AdminSimulations: React.FC<AdminSimulationsProps> = () => {
   }, [simulations, search]);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6">
       <div className="flex items-center justify-between">
         <h1 className="text-3xl font-heading font-bold">Manajemen Simulasi</h1>
       </div>
       {error && <div className="p-3 bg-red-100 border-2 border-red-500 rounded-lg text-red-700 font-bold">{error}</div>}
 
       <NeoCard className="p-4 flex items-center gap-4">
-        <div className="flex-1 flex items-center gap-3 bg-white p-2 rounded-xl border-2 border-black w-full">
+        <div className="flex min-w-0 w-full flex-1 items-center gap-3 rounded-xl border-2 border-black bg-white p-2">
           <Search className="w-5 h-5 text-gray-400" />
           <input 
             type="text" 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="flex-1 outline-none font-bold bg-transparent"
+            className="min-w-0 flex-1 outline-none font-bold bg-transparent"
             placeholder="Cari simulasi..."
           />
         </div>
       </NeoCard>
 
       <NeoCard className="p-0 overflow-hidden overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full min-w-[38rem] text-left">
           <thead>
             <tr className="bg-gray-50 border-b-2 border-black">
               <th className="p-4 font-bold text-sm uppercase">Title</th>

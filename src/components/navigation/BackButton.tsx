@@ -31,12 +31,12 @@ export const BackButton: React.FC<BackButtonProps> = ({ label, fallbackRoute, pa
     <button
       onClick={handleClick}
       className={cn(
-        "flex items-center space-x-2 px-4 py-2 rounded-xl border-2 border-black neo-shadow-sm hover:bg-gray-100 transition-all active:translate-y-0.5 active:shadow-none font-bold text-sm cursor-pointer",
+        "flex min-h-11 min-w-0 max-w-full items-center gap-2 whitespace-normal break-words px-4 py-2 rounded-xl border-2 border-black neo-shadow-sm hover:bg-gray-100 transition-all active:translate-y-0.5 active:shadow-none font-bold text-left text-sm cursor-pointer",
         className
       )}
     >
-      <ArrowLeft className="w-4 h-4" />
-      <span>{label}</span>
+      <ArrowLeft className="h-4 w-4 shrink-0" />
+      <span className="min-w-0">{label}</span>
     </button>
   );
 };

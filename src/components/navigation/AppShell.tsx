@@ -199,7 +199,7 @@ export const AppShell: React.FC<AppShellProps> = ({ currentUser, currentRoute, o
 
   return (
     <div className="flex min-h-screen min-w-0 overflow-x-clip bg-[#FFFDF8]">
-      <div className="hidden md:block">
+      <div className="hidden lg:block">
         <AppSidebar
           collapsed={collapsed}
           onToggle={() => setCollapsed(!collapsed)}
@@ -224,8 +224,8 @@ export const AppShell: React.FC<AppShellProps> = ({ currentUser, currentRoute, o
         className={cn(
           "min-w-0 flex-1 transition-[margin-left] duration-300 motion-reduce:transition-none",
           collapsed
-            ? "md:ml-[var(--sidebar-collapsed-width)]"
-            : "md:ml-[var(--sidebar-expanded-width)]",
+            ? "lg:ml-[var(--sidebar-collapsed-width)]"
+            : "lg:ml-[var(--sidebar-expanded-width)]",
         )}
       >
         <AppTopbar
@@ -233,7 +233,7 @@ export const AppShell: React.FC<AppShellProps> = ({ currentUser, currentRoute, o
           isMobileMenuOpen={isMobileMenuOpen}
           menuId="mobile-navigation"
         />
-        <main className="min-w-0 max-w-full p-4 sm:p-6">
+        <main className="min-w-0 max-w-full p-3.5 sm:p-6">
           <Breadcrumb items={getBreadcrumbItems()} onNavigate={onNavigate} />
           {backInfo && (
             <div className="mb-6">

@@ -22,14 +22,14 @@ export function AdminAuditLogs() {
   useEffect(() => { void load(); }, []);
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
-        <div><h1 className="text-3xl font-heading font-bold">Audit Log</h1><p className="text-gray-600">Riwayat perubahan penting oleh administrator.</p></div>
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6">
+      <div className="flex min-w-0 items-start justify-between gap-3">
+        <div className="min-w-0"><h1 className="text-3xl font-heading font-bold">Audit Log</h1><p className="text-gray-600">Riwayat perubahan penting oleh administrator.</p></div>
         <button onClick={() => void load()} className="p-2 bg-white rounded-lg neo-border"><RefreshCw className="w-4 h-4" /></button>
       </div>
       {error && <div className="p-3 bg-red-100 border-2 border-red-500 rounded-lg font-bold text-red-700">{error}</div>}
       <NeoCard className="p-0 overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full min-w-[52rem] text-left">
           <thead><tr className="bg-gray-50 border-b-2 border-black"><th className="p-4">Waktu</th><th className="p-4">Aksi</th><th className="p-4">Entitas</th><th className="p-4">Ringkasan</th></tr></thead>
           <tbody className="divide-y-2 divide-dashed divide-gray-200">
             {loading ? <tr><td colSpan={4} className="p-8 text-center font-bold">Memuat audit log...</td></tr> :

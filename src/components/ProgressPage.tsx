@@ -171,7 +171,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({
   const safeTransactions = Array.isArray(transactions) ? transactions : [];
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10 animate-fadeIn font-sans text-brand-text">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-8 py-6 font-sans text-brand-text animate-fadeIn sm:space-y-10 sm:py-12">
       
       {/* Page Header Navigation */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b-4 border-brand-border pb-4">

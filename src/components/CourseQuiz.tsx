@@ -259,8 +259,8 @@ export const CourseQuiz: React.FC<CourseQuizProps> = ({
   }
 
   return (
-    <div className="max-w-2xl mx-auto my-12 px-4 animate-fadeIn font-sans text-brand-text">
-      <div className="flex justify-between items-center mb-5 text-xs font-bold text-brand-muted">
+    <div className="mx-auto my-6 w-full min-w-0 max-w-2xl px-0 font-sans text-brand-text animate-fadeIn sm:my-12 sm:px-4">
+      <div className="mb-5 flex min-w-0 flex-col items-start gap-3 text-xs font-bold text-brand-muted sm:flex-row sm:items-center sm:justify-between">
         <button
           onClick={handleBackToCourse}
           className="flex items-center space-x-1 font-bold hover:text-brand-text transition-colors"
@@ -268,7 +268,7 @@ export const CourseQuiz: React.FC<CourseQuizProps> = ({
           <ArrowLeft className="w-4 h-4" />
           <span>Keluar Kuis</span>
         </button>
-        <div className="flex items-center space-x-3">
+        <div className="flex min-w-0 flex-wrap items-center gap-2 sm:justify-end sm:gap-3">
           {bestScore !== null && (
             <span className="bg-pastel-yellow/30 border border-brand-border/35 px-2 py-0.5 rounded text-[10px] uppercase font-bold text-brand-text">
               Terbaik: {bestScore}%
@@ -304,13 +304,13 @@ export const CourseQuiz: React.FC<CourseQuizProps> = ({
               <button
                 key={option.id}
                 onClick={() => handleSelectOption(currentQuestion.id, option.id)}
-                className={`w-full text-left p-4 rounded-xl border-2 text-xs sm:text-sm font-semibold flex items-center justify-between transition-all ${
+                className={`flex w-full min-w-0 items-center justify-between rounded-xl border-2 p-4 text-left text-xs font-semibold transition-all sm:text-sm ${
                   isUserSelected
                     ? "bg-[#111111] text-white border-[#111111] neo-shadow-sm translate-y-[-2px]"
                     : "bg-white text-brand-text border-brand-border/40 hover:bg-brand-surface/30 hover:border-brand-border"
                 }`}
               >
-                <div className="flex items-center space-x-3">
+                <div className="flex min-w-0 items-center gap-3">
                   <span
                     className={`w-6 h-6 rounded-lg border-2 flex items-center justify-center font-heading font-extrabold text-xs ${
                       isUserSelected ? "bg-pastel-yellow text-brand-text border-brand-border" : "bg-brand-surface border-brand-border"
@@ -318,26 +318,26 @@ export const CourseQuiz: React.FC<CourseQuizProps> = ({
                   >
                     {option.id.toUpperCase()}
                   </span>
-                  <span>{option.text}</span>
+                  <span className="min-w-0 break-words [overflow-wrap:anywhere]">{option.text}</span>
                 </div>
               </button>
             );
           })}
         </div>
 
-        <div className="pt-4 border-t border-brand-border/10 flex justify-between items-center">
+        <div className="grid grid-cols-2 items-center gap-2 border-t border-brand-border/10 pt-4 sm:flex sm:justify-between">
           <NeoButton
             variant="secondary"
             size="sm"
             disabled={currentQuestIdx === 0}
             onClick={handlePrev}
-            className="font-bold text-xs flex items-center space-x-1 py-2 px-4"
+            className="w-full px-3 py-2 text-xs font-bold sm:w-auto sm:px-4"
           >
             <ChevronLeft className="w-4 h-4" />
             <span>Kembali</span>
           </NeoButton>
 
-          <div className="text-[10px] text-brand-muted font-bold">
+          <div className="order-3 col-span-2 text-center text-[10px] font-bold text-brand-muted sm:order-none sm:col-span-1">
             {isSelected ? (
               <span className="text-emerald-700 flex items-center space-x-1 font-bold">
                 <CheckCircle2 className="w-3.5 h-3.5 shrink-0" />
@@ -353,7 +353,7 @@ export const CourseQuiz: React.FC<CourseQuizProps> = ({
             size="sm"
             disabled={!isSelected}
             onClick={handleNext}
-            className="font-bold text-xs flex items-center space-x-1 py-2 px-4"
+            className="w-full px-3 py-2 text-xs font-bold sm:w-auto sm:px-4"
           >
             <span>{currentQuestIdx === questions.length - 1 ? "Lihat Selesai" : "Berikutnya"}</span>
             <ChevronRight className="w-4 h-4" />

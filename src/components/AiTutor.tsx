@@ -53,6 +53,33 @@ export const AiTutor: React.FC<AiTutorProps> = ({
   const [convNotFound, setConvNotFound] = useState(false);
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const mobileHistoryRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (!showMobileHistory || typeof document === "undefined") return;
+
+    const originalOverflow = document.body.style.overflow;
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        setShowMobileHistory(false);
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+    const focusFrame = window.requestAnimationFrame(() => {
+      mobileHistoryRef.current
+        ?.querySelector<HTMLElement>('button:not([disabled]), [tabindex]:not([tabindex="-1"])')
+        ?.focus();
+    });
+
+    return () => {
+      window.cancelAnimationFrame(focusFrame);
+      window.removeEventListener("keydown", handleKeyDown);
+      document.body.style.overflow = originalOverflow;
+    };
+  }, [showMobileHistory]);
 
   // Load all conversations
   const loadConversations = async (selectId?: string) => {
@@ -228,7 +255,7 @@ export const AiTutor: React.FC<AiTutorProps> = ({
   const renderAiMessageContent = (msg: AiMessage) => {
     if (msg.role === "user") {
       return (
-        <div className="text-sm font-sans font-medium whitespace-pre-line text-brand-text break-words">
+        <div className="text-sm font-sans font-medium whitespace-pre-line text-brand-text break-words [overflow-wrap:anywhere]">
           {msg.content}
         </div>
       );
@@ -238,7 +265,7 @@ export const AiTutor: React.FC<AiTutorProps> = ({
       const parsed: TutorResponse & { warningMsg?: string } = JSON.parse(msg.content);
 
       return (
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4 [overflow-wrap:anywhere]">
           {/* Sensitive warning banner */}
           {parsed.warningMsg && (
             <div className="p-3 bg-pastel-peach rounded-xl neo-border-thin flex items-start gap-2 text-xs font-bold text-brand-text">
@@ -248,7 +275,7 @@ export const AiTutor: React.FC<AiTutorProps> = ({
           )}
 
           {/* Core explanation */}
-          <div className="text-sm font-sans text-brand-text whitespace-pre-line break-words leading-relaxed">
+          <div className="text-sm font-sans text-brand-text whitespace-pre-line break-words leading-relaxed [overflow-wrap:anywhere]">
             {parsed.answer}
           </div>
 
@@ -333,12 +360,12 @@ export const AiTutor: React.FC<AiTutorProps> = ({
   const badgeDetails = activeConv ? getContextBadgeDetails(activeConv.contextType) : { text: "General Mode", color: "bg-pastel-mint", icon: <Shield className="w-3 h-3" /> };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 font-sans min-h-[calc(100vh-140px)] flex flex-col">
+    <div className="mx-auto flex min-h-[calc(100dvh-140px)] w-full min-w-0 max-w-7xl flex-col px-0 py-4 font-sans sm:px-4 sm:py-8">
       
       {/* Page Title & Back Button */}
-      <div className="flex items-center justify-between mb-6">
-        <div className="space-y-1">
-          <div className="flex items-center gap-2">
+      <div className="mb-6 flex min-w-0 flex-col items-stretch gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="min-w-0 space-y-1">
+          <div className="flex min-w-0 flex-wrap items-center gap-2">
             <h1 className="text-2xl sm:text-3xl font-heading font-extrabold tracking-tight text-brand-text">
               AI Tutor
             </h1>
@@ -348,13 +375,13 @@ export const AiTutor: React.FC<AiTutorProps> = ({
             Asisten keamanan siber defensif personal untuk memandu perjalanan belajarmu secara aman dan menyenangkan.
           </p>
         </div>
-        <NeoButton variant="secondary" onClick={() => onNavigate("/dashboard")} className="text-xs py-2 px-3">
+        <NeoButton variant="secondary" onClick={() => onNavigate("/dashboard")} className="w-full px-3 py-2 text-xs sm:w-auto sm:shrink-0">
           Dashboard
         </NeoButton>
       </div>
 
       {/* Main Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 flex-grow">
+      <div className="grid min-w-0 flex-grow grid-cols-1 gap-4 lg:grid-cols-4 lg:gap-6">
         
         {/* Sidebar History (Desktop) */}
         <div className="hidden lg:flex flex-col gap-4 col-span-1">
@@ -416,9 +443,9 @@ export const AiTutor: React.FC<AiTutorProps> = ({
         </div>
 
         {/* Chat Area & Header */}
-        <div className="lg:col-span-3 flex flex-col h-full min-h-[450px]">
+        <div className="flex h-full min-h-[450px] min-w-0 flex-col lg:col-span-3">
           
-          <NeoCard className="flex-grow flex flex-col p-4 sm:p-5 h-full overflow-hidden">
+          <NeoCard className="flex h-full min-w-0 flex-grow flex-col overflow-hidden p-3.5 sm:p-5">
             {convNotFound ? (
               <div className="flex flex-col items-center justify-center py-20 px-4 text-center space-y-4 flex-grow">
                 <div className="w-16 h-16 rounded-full border-3 border-brand-border bg-pastel-peach flex items-center justify-center text-2xl rotate-[-3deg]">
@@ -444,8 +471,8 @@ export const AiTutor: React.FC<AiTutorProps> = ({
             ) : (
               <>
                 {/* Active chat header with Mobile menu button and context badge */}
-            <div className="flex items-center justify-between border-b border-brand-text pb-3.5 mb-4">
-              <div className="flex items-center gap-3">
+            <div className="mb-4 flex min-w-0 items-center justify-between gap-2 border-b border-brand-text pb-3.5">
+              <div className="flex min-w-0 items-center gap-2 sm:gap-3">
                 {/* Mobile Menu Trigger */}
                 <button
                   onClick={() => setShowMobileHistory(true)}
@@ -455,28 +482,28 @@ export const AiTutor: React.FC<AiTutorProps> = ({
                   <Menu className="w-4 h-4" />
                 </button>
 
-                <div className="space-y-1">
+                <div className="min-w-0 space-y-1">
                   <div className="flex items-center gap-2">
                     <span className={`flex items-center gap-1 text-[10px] font-heading font-extrabold px-2.5 py-0.5 rounded-full ${badgeDetails.color} border border-brand-text shadow-[1px_1px_0px_#111]`}>
                       {badgeDetails.icon}
                       {badgeDetails.text}
                     </span>
                   </div>
-                  <h2 className="text-sm sm:text-base font-heading font-extrabold text-brand-text truncate max-w-[200px] sm:max-w-md">
+                  <h2 className="max-w-[10rem] truncate font-heading text-sm font-extrabold text-brand-text min-[390px]:max-w-[13rem] sm:max-w-md sm:text-base">
                     {activeConv ? activeConv.title : "Membuat percakapan..."}
                   </h2>
                 </div>
               </div>
 
               {/* Status Indicator */}
-              <div className="flex items-center gap-1.5 text-xs text-brand-muted font-bold">
+              <div className="flex shrink-0 items-center gap-1.5 text-xs text-brand-muted font-bold">
                 <span className="w-2 h-2 rounded-full bg-[#10b981] animate-pulse"></span>
                 <span className="text-[10px] sm:text-xs">Aktif</span>
               </div>
             </div>
 
             {/* Messages view wrapper */}
-            <div className="flex-grow overflow-y-auto space-y-4 max-h-[350px] pr-2.5 mb-4 scrollbar-thin">
+            <div className="mb-4 max-h-[min(50dvh,350px)] min-w-0 flex-grow space-y-4 overflow-y-auto pr-1.5 scrollbar-thin sm:pr-2.5">
               {loadingConv ? (
                 <div className="flex flex-col items-center justify-center py-20">
                   <Sparkles className="w-8 h-8 text-pastel-mint animate-spin mb-2" />
@@ -501,7 +528,7 @@ export const AiTutor: React.FC<AiTutorProps> = ({
                       className={`flex ${isUser ? "justify-end" : "justify-start"}`}
                     >
                       <div
-                        className={`max-w-[85%] rounded-2xl p-4 neo-border ${
+                        className={`min-w-0 max-w-[92%] overflow-hidden rounded-2xl p-3.5 [overflow-wrap:anywhere] sm:max-w-[85%] sm:p-4 neo-border ${
                           isUser
                             ? "bg-pastel-yellow neo-shadow-sm rounded-tr-none"
                             : "bg-white neo-shadow-sm rounded-tl-none"
@@ -518,7 +545,7 @@ export const AiTutor: React.FC<AiTutorProps> = ({
               )}
               {loadingSend && (
                 <div className="flex justify-start">
-                  <div className="max-w-[80%] bg-white rounded-2xl rounded-tl-none p-4 neo-border neo-shadow-sm">
+                  <div className="min-w-0 max-w-[92%] bg-white rounded-2xl rounded-tl-none p-3.5 [overflow-wrap:anywhere] sm:max-w-[80%] sm:p-4 neo-border neo-shadow-sm">
                     <p className="text-[10px] uppercase font-heading font-black tracking-wider text-brand-muted mb-1">
                       AI Tutor
                     </p>
@@ -538,9 +565,9 @@ export const AiTutor: React.FC<AiTutorProps> = ({
 
             {/* Error fallback alert banner */}
             {errorMsg && (
-              <div className="p-3 bg-pastel-peach border border-brand-text rounded-xl flex items-center gap-2 text-xs font-bold text-brand-text mb-3">
-                <AlertCircle className="w-4 h-4 text-pastel-red" />
-                <span>{errorMsg}</span>
+              <div className="mb-3 flex min-w-0 items-start gap-2 rounded-xl border border-brand-text bg-pastel-peach p-3 text-xs font-bold text-brand-text">
+                <AlertCircle className="h-4 w-4 shrink-0 text-pastel-red" />
+                <span className="min-w-0 break-words [overflow-wrap:anywhere]">{errorMsg}</span>
               </div>
             )}
 
@@ -551,7 +578,7 @@ export const AiTutor: React.FC<AiTutorProps> = ({
                   e.preventDefault();
                   handleSendMessage(inputText);
                 }}
-                className="flex gap-2"
+                className="flex min-w-0 gap-2"
               >
                 <input
                   type="text"
@@ -560,7 +587,7 @@ export const AiTutor: React.FC<AiTutorProps> = ({
                   placeholder="Ketik pertanyaan keamanan siber defensif Anda (maks 2.000 karakter)..."
                   disabled={loadingSend}
                   maxLength={2000}
-                  className="flex-grow px-4 py-3 text-sm bg-white rounded-xl border border-brand-text outline-none focus:ring-4 focus:ring-pastel-mint focus:ring-offset-2 font-sans font-medium"
+                  className="min-w-0 flex-1 rounded-xl border border-brand-text bg-white px-3 py-3 text-base font-sans font-medium outline-none focus:ring-4 focus:ring-pastel-mint focus:ring-offset-2 sm:px-4 sm:text-sm"
                 />
                 <NeoButton
                   type="submit"
@@ -586,8 +613,8 @@ export const AiTutor: React.FC<AiTutorProps> = ({
 
       {/* Mobile Sidebar History Drawer */}
       {showMobileHistory && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex justify-start animate-fadeIn">
-          <div className="w-[280px] bg-[#FFFDF8] h-full p-5 border-r border-brand-text flex flex-col animate-slideIn">
+        <div className="fixed inset-0 z-50 flex justify-start bg-black/60 animate-fadeIn" role="dialog" aria-modal="true" aria-label="Riwayat obrolan AI Tutor">
+          <div ref={mobileHistoryRef} className="flex h-dvh w-[min(90vw,20rem)] min-w-0 flex-col overflow-hidden border-r border-brand-text bg-[#FFFDF8] p-4 pb-[max(1rem,env(safe-area-inset-bottom))] animate-slideIn sm:p-5">
             <div className="flex items-center justify-between pb-3.5 border-b border-brand-text mb-4">
               <div className="flex items-center gap-2">
                 <History className="w-4.5 h-4.5 text-brand-text" />
@@ -596,6 +623,7 @@ export const AiTutor: React.FC<AiTutorProps> = ({
               <button
                 onClick={() => setShowMobileHistory(false)}
                 className="p-1 rounded-md border border-brand-text bg-white hover:bg-brand-surface neo-shadow-sm transition-all"
+                aria-label="Tutup riwayat obrolan"
               >
                 <X className="w-4 h-4" />
               </button>

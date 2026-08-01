@@ -244,7 +244,7 @@ export const LearningPaths: React.FC<LearningPathsProps> = ({
         : activePathData.badgeName || "Beginner Master";
 
     return (
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8 animate-fadeIn font-sans">
+      <div className="mx-auto w-full min-w-0 max-w-5xl space-y-8 py-6 font-sans animate-fadeIn sm:py-12">
         <div className="flex items-center space-x-2">
           <NeoButton variant="secondary" size="sm" onClick={handleBackToList} className="font-bold flex items-center space-x-1.5">
             <ArrowLeft className="w-4 h-4" />
@@ -428,7 +428,7 @@ export const LearningPaths: React.FC<LearningPathsProps> = ({
 
   // 2. RENDER PATHS LIST
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-10 animate-fadeIn font-sans">
+    <div className="mx-auto w-full min-w-0 max-w-7xl space-y-8 py-6 font-sans animate-fadeIn sm:space-y-10 sm:py-12">
       <div className="space-y-2 border-b-4 border-brand-border pb-4">
         <h1 className="text-3xl sm:text-4xl font-heading font-extrabold text-brand-text">
           Pilih Jalur Pembelajaran Anda

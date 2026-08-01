@@ -42,8 +42,8 @@ export const AdminCertificates: React.FC<AdminCertificatesProps> = () => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="mx-auto w-full min-w-0 max-w-6xl space-y-6">
+      <div className="flex min-w-0 items-center justify-between gap-3">
         <h1 className="text-3xl font-heading font-bold">Manajemen Sertifikat</h1>
         <button onClick={() => void load()} className="p-2 bg-white rounded-lg neo-border" aria-label="Muat ulang">
           <RefreshCw className="w-4 h-4" />
@@ -52,7 +52,7 @@ export const AdminCertificates: React.FC<AdminCertificatesProps> = () => {
       {error && <div className="p-3 bg-red-100 border-2 border-red-500 rounded-lg font-bold text-red-700">{error}</div>}
 
       <NeoCard className="p-0 overflow-hidden overflow-x-auto">
-        <table className="w-full text-left">
+        <table className="w-full min-w-[42rem] text-left">
           <thead>
             <tr className="bg-gray-50 border-b-2 border-black">
               <th className="p-4 font-bold text-sm uppercase">Code</th>

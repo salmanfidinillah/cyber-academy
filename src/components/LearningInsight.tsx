@@ -126,7 +126,7 @@ export const LearningInsightPage: React.FC<LearningInsightPageProps> = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-6 sm:py-8 font-sans">
+    <div className="mx-auto w-full min-w-0 max-w-7xl py-4 font-sans sm:py-8">
       
       {/* Header and Back navigation button */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
@@ -158,7 +158,7 @@ export const LearningInsightPage: React.FC<LearningInsightPageProps> = ({
       </div>
 
       {/* Stats Summary Cards Row */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-4 min-[360px]:grid-cols-2 md:grid-cols-4">
         <NeoCard className="p-4 sm:p-5 flex flex-col gap-1.5 bg-pastel-mint/15">
           <div className="flex items-center justify-between">
             <span className="text-[10px] sm:text-xs font-heading font-extrabold text-brand-muted uppercase">
