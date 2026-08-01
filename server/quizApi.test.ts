@@ -101,7 +101,7 @@ vi.mock("./firebaseAdmin", () => {
     }),
     getAll: async (...refs: any[]) => {
       return refs.map((ref) => {
-        const match = Object.entries(store).find(([col, docs]) => docs[ref.id]);
+        const match = Object.entries(store).find(([, docs]) => docs[ref.id]);
         const data = match ? match[1][ref.id] : null;
         return {
           exists: !!data,

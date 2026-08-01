@@ -192,8 +192,6 @@ import { authenticateUser } from "./middleware/auth";
 import {
   calculateLevel,
   completeLesson,
-  getUserProgress,
-  getUserXpTransactions,
   resetLearningState,
 } from "./services/learningStateService";
 
@@ -311,10 +309,9 @@ describe("Learning State API - Hardening, Transactions & Reset Rules", () => {
     it("1. Returns 401 if request is unauthenticated (no token)", async () => {
       const req: any = { headers: {} };
       let statusVal = 200;
-      let jsonVal: any = null;
       const res: any = {
         status: (code: number) => { statusVal = code; return res; },
-        json: (data: any) => { jsonVal = data; return res; }
+        json: (_data: any) => res
       };
       const next = vi.fn();
       await authenticateUser(req, res, next);

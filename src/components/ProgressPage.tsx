@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import { ArrowLeft, Award, CheckCircle, Clock, Shield, Sparkles, TrendingUp, History, Flame, RefreshCw } from "lucide-react";
+import { ArrowLeft, Award, CheckCircle, Shield, TrendingUp, History, RefreshCw } from "lucide-react";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
 import { BadgeProgress, User, XpTransaction } from "../types";
@@ -35,7 +35,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({
   const [refreshKey, setRefreshKey] = useState(0);
   const [catalogCourses, setCatalogCourses] = useState<any[]>([]);
   const [catalogLessons, setCatalogLessons] = useState<any[]>([]);
-  const [loadingCatalog, setLoadingCatalog] = useState(true);
+  const [, setLoadingCatalog] = useState(true);
   const [catalogError, setCatalogError] = useState<string | null>(null);
   const [badgeProgress, setBadgeProgress] = useState<BadgeProgress[]>([]);
   const [badgeError, setBadgeError] = useState<string | null>(null);

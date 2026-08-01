@@ -60,7 +60,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         await checkAdminClaim(refreshedUser, true);
         let profile = await getUserProfile(refreshedUser.uid);
         if (!profile) {
-          console.log("Profile missing during refresh. Triggering manual recovery...");
           profile = await createUserProfileIfMissing(refreshedUser);
         }
         
@@ -101,10 +100,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     let active = true;
     const checkRedirect = async () => {
       try {
-        const redirectedUser = await handleGoogleRedirectResult();
-        if (redirectedUser && active) {
-          console.log("Redirect sign-in successful.");
-        }
+        await handleGoogleRedirectResult();
       } catch (err: any) {
         console.error("Redirect sign-in error:", err);
         if (active) {

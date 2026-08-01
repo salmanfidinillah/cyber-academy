@@ -141,64 +141,6 @@ export const PhishingSimulationPreviewIllustration: React.FC = () => {
   );
 };
 
-// AiTutorPreviewIllustration: Tutor Chat Window with interactive conversation
-export const AiTutorPreviewIllustration: React.FC = () => {
-  return (
-    <div className="relative w-full max-w-[480px] bg-brand-surface neo-border rounded-[20px] neo-shadow-lg p-4 font-sans text-brand-text">
-      {/* Header */}
-      <div className="flex items-center justify-between pb-3 border-b-2 border-brand-border">
-        <div className="flex items-center space-x-2.5">
-          <div className="w-11 h-11 bg-pastel-mint neo-border rounded-full flex items-center justify-center relative">
-            {/* Robot Head icon */}
-            <svg className="w-6 h-6 text-brand-text" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-            </svg>
-            {/* Online Indicator */}
-            <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-pastel-green neo-border rounded-full" />
-          </div>
-          <div>
-            <div className="font-heading font-bold text-sm">Gemini AI Tutor</div>
-            <div className="text-[10px] bg-pastel-mint/40 text-brand-muted px-2 py-0.2 rounded border border-[#111111] font-mono w-max">Keamanan Defensif</div>
-          </div>
-        </div>
-        <span className="text-xs bg-[#111111] text-pastel-mint px-2 py-1 rounded-lg font-heading">LIVE HELP</span>
-      </div>
-
-      {/* Chat Messages */}
-      <div className="py-4 space-y-3 max-h-[220px] overflow-y-auto">
-        {/* User Message */}
-        <div className="flex justify-end">
-          <div className="bg-pastel-blue neo-border rounded-[18px] rounded-tr-sm p-3 max-w-[85%] text-xs neo-shadow-sm">
-            <p className="font-bold mb-1">Anda:</p>
-            Kenapa pencuri siber selalu menyuruh kita klik link secara terburu-buru?
-          </div>
-        </div>
-
-        {/* AI Message */}
-        <div className="flex justify-start">
-          <div className="bg-pastel-mint neo-border rounded-[18px] rounded-tl-sm p-3 max-w-[85%] text-xs neo-shadow-sm">
-            <p className="font-bold mb-1">🤖 AI Tutor:</p>
-            Itu disebut taktik <strong>"Mendesak" (Urgency)</strong>! Mereka memicu kepanikan atau rasa takut agar logikamu mati, sehingga kamu bertindak terburu-buru tanpa memeriksa keaslian website tersebut. Tetap tenang adalah pertahanan pertamamu! 🌸
-          </div>
-        </div>
-      </div>
-
-      {/* Input Placeholder */}
-      <div className="mt-2 flex space-x-2">
-        <input
-          type="text"
-          disabled
-          placeholder="Tanyakan sesuatu tentang password atau 2FA..."
-          className="flex-1 px-3 py-2 text-xs bg-white neo-border rounded-xl"
-        />
-        <button disabled className="bg-pastel-mint neo-border rounded-xl px-4 py-2 text-xs font-heading font-bold neo-shadow-sm cursor-not-allowed">
-          Kirim
-        </button>
-      </div>
-    </div>
-  );
-};
-
 // GamificationPreviewIllustration: XP, Levels, Badge, and Certificate Showcase
 export const GamificationPreviewIllustration: React.FC = () => {
   return (

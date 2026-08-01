@@ -5,22 +5,5 @@
   },
   "storage": {
     "rules": "storage.rules"
-  },
-  "hosting": {
-    "public": "hosting-placeholder",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
-    "rewrites": [
-      {
-        "source": "**",
-        "run": {
-          "serviceId": "cyber-academy-ai",
-          "region": "asia-southeast2"
-        }
-      }
-    ]
   }
 }

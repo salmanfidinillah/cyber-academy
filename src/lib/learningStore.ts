@@ -1,13 +1,12 @@
 // Client Learning Store for Gamification & Content Progress
 // Manages local state for learning progress, XP, streak, quiz attempts, simulations, badges, certificates, and AI tutor cache per Firebase UID.
 
-import { courses, lessons } from "../data";
-import { quizzes, questions, questionToLessonMap } from "../quiz_data";
+import { courses } from "../data";
+import { questions, questionToLessonMap } from "../quiz_data";
 import { authenticatedFetch } from "../services/apiClient";
 import {
   fetchCatalogCourseById,
   fetchCatalogCoursesForPath,
-  fetchCatalogLessonById,
   fetchCatalogLessonsForCourse,
 } from "../services/catalogService";
 import { completeMyLesson, resetMyLearningState } from "../services/learningStateService";
@@ -211,11 +210,6 @@ export const getUserSimulationAttempts = (userId: string): Record<string, any> =
   return data ? JSON.parse(data) : {};
 };
 
-const saveUserSimulationAttempts = (userId: string, attempts: Record<string, any>) => {
-  if (!userId || !userId.trim()) throw new Error("User ID tidak boleh kosong.");
-  localStorage.setItem(userStorageKey(USER_KEY_BASES.SIMULATION_ATTEMPTS, userId), JSON.stringify(attempts));
-};
-
 export const getUserAiConversations = (userId: string): Record<string, any> => {
   if (!userId || !userId.trim()) throw new Error("User ID tidak boleh kosong.");
   ensureMigrated(userId);
@@ -223,21 +217,11 @@ export const getUserAiConversations = (userId: string): Record<string, any> => {
   return data ? JSON.parse(data) : {};
 };
 
-const saveUserAiConversations = (userId: string, conversations: Record<string, any>) => {
-  if (!userId || !userId.trim()) throw new Error("User ID tidak boleh kosong.");
-  localStorage.setItem(userStorageKey(USER_KEY_BASES.AI_CONVERSATIONS, userId), JSON.stringify(conversations));
-};
-
 export const getUserAiMessages = (userId: string): Record<string, any> => {
   if (!userId || !userId.trim()) throw new Error("User ID tidak boleh kosong.");
   ensureMigrated(userId);
   const data = localStorage.getItem(userStorageKey(USER_KEY_BASES.AI_MESSAGES, userId));
   return data ? JSON.parse(data) : {};
-};
-
-const saveUserAiMessages = (userId: string, messages: Record<string, any>) => {
-  if (!userId || !userId.trim()) throw new Error("User ID tidak boleh kosong.");
-  localStorage.setItem(userStorageKey(USER_KEY_BASES.AI_MESSAGES, userId), JSON.stringify(messages));
 };
 
 // Date & Time helpers for Asia/Jakarta timezone
@@ -473,10 +457,10 @@ export const awardXpAndProcessStreak = async (
 
 // API: Complete Lesson with full Idempotency & Progress Recalculation
 export const completeLesson = async (
-  userId: string,
+  _userId: string,
   lessonId: string,
-  courseIdInput?: string,
-  pathIdInput?: string
+  _courseIdInput?: string,
+  _pathIdInput?: string
 ): Promise<{
   xpEarned: number;
   totalXp: number;

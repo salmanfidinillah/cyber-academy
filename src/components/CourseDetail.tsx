@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, BookOpen, Clock, Award, Shield, CheckCircle, Lock as LockIcon, Play, ChevronRight, RefreshCw } from "lucide-react";
+import { ArrowLeft, BookOpen, Clock, Award, CheckCircle, Lock as LockIcon, Play, ChevronRight, RefreshCw } from "lucide-react";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
 import { NeoBadge } from "./NeoBadge";

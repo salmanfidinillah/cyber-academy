@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { User } from "../types";
-import { Award, BookOpen, CheckCircle, Clock, Flame, GraduationCap, PenLine, Settings, User as UserIcon } from "lucide-react";
+import { Award, BookOpen, CheckCircle, Flame, GraduationCap, PenLine, Settings, User as UserIcon } from "lucide-react";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
 import { fetchMyBadges, fetchMyCertificates } from "../services/achievementService";
 import { fetchMyProgress } from "../services/learningStateService";
-import { cn } from "../lib/utils";
 
 interface ProfilePageProps {
   currentUser: User;

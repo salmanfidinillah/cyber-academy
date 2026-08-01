@@ -1,8 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import express, { Request, Response } from "express";
 import rateLimit from "express-rate-limit";
-import fs from "fs";
-import path from "path";
 
 // Helper to set up test express app
 function createTestApp() {

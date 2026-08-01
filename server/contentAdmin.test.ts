@@ -2,21 +2,11 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 import { setTokenVerifierForTesting } from "./middleware/auth";
 import {
   createLearningPath,
-  updateLearningPath,
-  deleteLearningPath,
   createCourse,
   updateCourse,
-  deleteCourse,
   createLesson,
   updateLesson,
-  deleteLesson,
   getAdminLearningPaths,
-  getAdminCourses,
-  getAdminLessons,
-  getCatalogLearningPaths,
-  getCatalogCourseById,
-  getCatalogLessonsForCourse,
-  getCatalogLessonById,
   getCatalogLessonByCourseAndLessonSlug,
   ApiError,
 } from "./services/contentService";

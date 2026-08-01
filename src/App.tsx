@@ -1,4 +1,4 @@
-import { lazy, Suspense, useState, useEffect } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
 import { LandingPage } from "./components/LandingPage";
 import { Login } from "./components/Login";
@@ -27,7 +27,6 @@ import { SettingsProfile } from "./components/SettingsProfile";
 import { SettingsAccount } from "./components/SettingsAccount";
 import { SettingsSecurity } from "./components/SettingsSecurity";
 import { useUser } from "./contexts/UserContext";
-import { logoutUser } from "./services/authService";
 import { VerifyEmailPage } from "./components/VerifyEmailPage";
 import { PublicLayout, UserLayout, AdminLayout } from "./components/navigation/Layouts";
 import { PublicRoute, ProtectedRoute, OnboardingRoute, VerificationRoute, AdminRoute } from "./components/navigation/RouteGuards";
