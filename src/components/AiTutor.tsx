@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import {
-  MessageSquare,
   Plus,
   Trash2,
   Send,
@@ -11,9 +10,7 @@ import {
   History,
   X,
   Menu,
-  CheckCircle,
-  Shield,
-  HelpCircle
+  Shield
 } from "lucide-react";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";

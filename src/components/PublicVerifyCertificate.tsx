@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { verifyCertificatePublicly } from "../lib/learningStore";
-import { ShieldCheck, ShieldAlert, ArrowRight, CheckCircle2, XCircle, Search, Calendar, User, Award, RefreshCw } from "lucide-react";
+import { ShieldCheck, ArrowRight, CheckCircle2, XCircle, Search, Calendar, User, Award, RefreshCw } from "lucide-react";
 
 interface PublicVerifyCertificateProps {
   initialCode?: string;

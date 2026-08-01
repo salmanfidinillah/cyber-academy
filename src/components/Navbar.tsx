@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Menu, X, Shield, LogIn, LayoutDashboard, LogOut } from "lucide-react";
+import { Menu, X, Shield, LogIn, LogOut } from "lucide-react";
 import { NeoButton } from "./NeoButton";
 import { User } from "../types";
 

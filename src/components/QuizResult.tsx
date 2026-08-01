@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { ArrowLeft, CheckCircle2, XCircle, ChevronRight, HelpCircle, BookOpen, Clock, AlertTriangle, History, RefreshCw } from "lucide-react";
+import { ArrowLeft, ChevronRight, AlertTriangle, History, RefreshCw } from "lucide-react";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
 import { NeoBadge } from "./NeoBadge";
@@ -109,7 +109,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
     );
   }
 
-  const { score, passed, resultStatus, correctCount, totalQuestions, recommendedLessonIds } = attempt;
+  const { score, resultStatus, correctCount, totalQuestions, recommendedLessonIds } = attempt;
   const recommendedLessons = courseLessons.filter(l => recommendedLessonIds.includes(l.id));
 
   return (

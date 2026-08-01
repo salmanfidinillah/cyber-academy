@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Shield, BookOpen, Bot, Award, Lock as LockIcon, ChevronDown, ChevronUp, CheckCircle, ArrowRight, Sparkles, AlertCircle, HelpCircle, Flame, ExternalLink } from "lucide-react";
+import { Shield, BookOpen, Bot, Award, Lock as LockIcon, ChevronDown, ChevronUp, CheckCircle, ArrowRight, Sparkles, HelpCircle, Flame } from "lucide-react";
 import { features, problemsAndSolutions, learningPaths, steps, faqs } from "../data";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
@@ -7,7 +7,6 @@ import { NeoBadge } from "./NeoBadge";
 import {
   HeroIllustration,
   PhishingSimulationPreviewIllustration,
-  AiTutorPreviewIllustration,
   GamificationPreviewIllustration,
   Sparkle
 } from "./Illustrations";
@@ -19,9 +18,6 @@ interface LandingPageProps {
 export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
   // FAQ accordion state
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
-
-  // Phishing simulation preview highlights state
-  const [activePhishingAlert, setActivePhishingAlert] = useState<string | null>(null);
 
   // Interactive AI Tutor state
   const [aiChatHistory, setAiChatHistory] = useState<Array<{ sender: "user" | "ai"; text: string }>>([

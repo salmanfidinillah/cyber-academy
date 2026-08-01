@@ -15,7 +15,7 @@ interface AdminLessonsProps {
   onNavigate: (route: string) => void;
 }
 
-export const AdminLessons: React.FC<AdminLessonsProps> = ({ currentUser, onNavigate }) => {
+export const AdminLessons: React.FC<AdminLessonsProps> = () => {
   const [lessons, setLessons] = useState<any[]>([]);
   const [courses, setCourses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);

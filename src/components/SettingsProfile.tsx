@@ -2,7 +2,7 @@ import React, { useState, useRef } from "react";
 import { User } from "../types";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
-import { Camera, Save, X, Loader2 } from "lucide-react";
+import { Camera, Save, Loader2 } from "lucide-react";
 import { updateOwnUserProfile, uploadCurrentUserAvatar } from "../services/userService";
 
 interface SettingsProfileProps {

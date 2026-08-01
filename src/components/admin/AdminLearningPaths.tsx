@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useMemo } from "react";
 import { User } from "../../types";
 import { NeoCard } from "../NeoCard";
-import { Plus, Search, Eye, Edit, Trash2, AlertTriangle, RefreshCw } from "lucide-react";
+import { Plus, Search, Edit, Trash2, AlertTriangle, RefreshCw } from "lucide-react";
 import {
   fetchAdminLearningPaths,
   createAdminLearningPath,
@@ -14,7 +14,7 @@ interface AdminLearningPathsProps {
   onNavigate: (route: string) => void;
 }
 
-export const AdminLearningPaths: React.FC<AdminLearningPathsProps> = ({ currentUser, onNavigate }) => {
+export const AdminLearningPaths: React.FC<AdminLearningPathsProps> = () => {
   const [paths, setPaths] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

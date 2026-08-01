@@ -8,7 +8,7 @@ interface SettingsPageProps {
   onNavigate: (route: string) => void;
 }
 
-export const SettingsPage: React.FC<SettingsPageProps> = ({ currentUser, onNavigate }) => {
+export const SettingsPage: React.FC<SettingsPageProps> = ({ onNavigate }) => {
   const settingsMenu = [
     {
       title: "Profil",

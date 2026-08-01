@@ -281,7 +281,7 @@ describe("Integration Test: Admin & Catalog API Endpoints", () => {
         },
         body: JSON.stringify({ title: "Path A", slug: "path-a" }),
       });
-      const itemA = await resA.json();
+      await resA.json();
 
       const resB = await fetch(`${baseUrl}/api/admin/learning-paths`, {
         method: "POST",

@@ -23,7 +23,7 @@ export const catalogRateLimiter = rateLimit({
 
 router.use(catalogRateLimiter);
 
-router.get("/learning-paths", async (req: Request, res: Response) => {
+router.get("/learning-paths", async (_req: Request, res: Response) => {
   try {
     const items = await getCatalogLearningPaths();
     res.json(items);
@@ -109,7 +109,7 @@ router.get("/courses/by-slug/:courseSlug/lessons/:lessonSlug", async (req: Reque
   }
 });
 
-router.get("/lesson-by-slug/:slug", async (req: Request, res: Response) => {
+router.get("/lesson-by-slug/:slug", async (_req: Request, res: Response) => {
   res.status(410).json({
     error: "Endpoint global /lesson-by-slug/:slug telah didepresiasi. Gunakan /courses/by-slug/:courseSlug/lessons/:lessonSlug.",
   });

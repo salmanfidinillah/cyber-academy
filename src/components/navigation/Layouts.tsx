@@ -1,11 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Navbar } from "../Navbar";
 import { Footer } from "../Footer";
 import { AppShell } from "./AppShell";
 import { AdminShell } from "./AdminShell";
 import { useUser } from "../../contexts/UserContext";
-import { logoutUser } from "../../services/authService";
 import { LoadingBoundary } from "../LoadingBoundary";
 
 export const PublicLayout: React.FC = () => {

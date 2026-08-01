@@ -29,9 +29,6 @@ const resetProgressLimiter = rateLimit({
   message: { error: "Terlalu banyak permintaan reset progres. Silakan coba sesaat lagi." },
 });
 
-// Strict empty body schema for complete lesson endpoint
-const completeLessonBodySchema = z.object({}).strict();
-
 // Schema for reset endpoint
 const resetBodySchema = z.object({
   confirmation: z.literal("RESET_MY_PROGRESS", {

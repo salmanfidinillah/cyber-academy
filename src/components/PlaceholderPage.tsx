@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Shield, BookOpen, Bot, Award, Lock as LockIcon, Sparkles, User, Settings, ArrowLeft, Mail, AlertTriangle } from "lucide-react";
+import { Lock as LockIcon, Sparkles, ArrowLeft, AlertTriangle } from "lucide-react";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
 import { NeoBadge } from "./NeoBadge";

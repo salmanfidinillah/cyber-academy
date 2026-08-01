@@ -9,7 +9,7 @@ interface AdminQuizzesProps {
   onNavigate: (route: string) => void;
 }
 
-export const AdminQuizzes: React.FC<AdminQuizzesProps> = ({ currentUser, onNavigate }) => {
+export const AdminQuizzes: React.FC<AdminQuizzesProps> = ({ onNavigate }) => {
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState({ status: "all" });

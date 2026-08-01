@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { User } from "../types";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
-import { Mail, Shield, AlertCircle, Save, Loader2 } from "lucide-react";
+import { Shield, AlertCircle, Save, Loader2 } from "lucide-react";
 import { updateAccountEmail } from "../services/authService";
 
 interface SettingsAccountProps {
@@ -10,7 +10,7 @@ interface SettingsAccountProps {
   onNavigate: (route: string) => void;
 }
 
-export const SettingsAccount: React.FC<SettingsAccountProps> = ({ currentUser, onNavigate }) => {
+export const SettingsAccount: React.FC<SettingsAccountProps> = ({ currentUser }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);

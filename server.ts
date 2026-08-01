@@ -5,9 +5,6 @@ import { createServer as createViteServer } from "vite";
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import rateLimit from "express-rate-limit";
-import { authenticateUser, requireAdmin } from "./server/middleware/auth";
-import { adminAuth } from "./server/firebaseAdmin";
-import { AuthenticatedRequest } from "./server/types";
 import adminContentRoutes from "./server/routes/adminContentRoutes";
 import catalogRoutes from "./server/routes/catalogRoutes";
 import learningStateRoutes from "./server/routes/learningStateRoutes";
@@ -247,7 +244,7 @@ async function startServer() {
   } else {
     const distPath = path.join(process.cwd(), 'dist');
     app.use(express.static(distPath));
-    app.get('*', (req: Request, res: Response) => {
+    app.get('*', (_req: Request, res: Response) => {
       res.sendFile(path.join(distPath, 'index.html'));
     });
   }

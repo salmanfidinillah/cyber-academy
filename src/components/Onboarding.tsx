@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sparkles, Compass, Target, Clock, ShieldCheck, Check, ArrowRight, ArrowLeft } from "lucide-react";
+import { Sparkles, Compass, Target, Clock, ShieldCheck, Check, ArrowRight } from "lucide-react";
 import { NeoButton } from "./NeoButton";
 import { NeoCard } from "./NeoCard";
 import { NeoBadge } from "./NeoBadge";

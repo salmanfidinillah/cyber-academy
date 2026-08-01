@@ -4,7 +4,6 @@ import {
   TrendingUp,
   AlertTriangle,
   Lightbulb,
-  ArrowRight,
   RefreshCw,
   Award,
   BookOpen,

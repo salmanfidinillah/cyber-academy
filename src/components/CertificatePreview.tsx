@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "motion/react";
 import {
   createMyCertificate,
   CertificateEligibility,
@@ -10,7 +9,7 @@ import { fetchCatalogLearningPaths } from "../services/catalogService";
 import { Certificate, LearningPath, User } from "../types";
 import { 
   Award, FileDown, CheckCircle2, ShieldCheck, XCircle, ArrowRight, 
-  Loader2, QrCode, Copy, Check, ExternalLink, Calendar, RefreshCw 
+  Loader2, Copy, Check, ExternalLink
 } from "lucide-react";
 import QRCode from "qrcode";
 
@@ -32,17 +31,6 @@ export function CertificatePreview({ currentUser, onNavigate }: CertificatePrevi
   const [errorMsg, setErrorMsg] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [isDownloading, setIsDownloading] = useState(false);
-
-  const checkEligibilityAndCerts = async () => {
-    const [eligibilityResult, certificates, paths] = await Promise.all([
-      fetchCertificateEligibility(selectedPathId),
-      fetchMyCertificates(),
-      fetchCatalogLearningPaths(),
-    ]);
-    setEligibility(eligibilityResult);
-    setAvailablePaths(paths);
-    setActiveCert(certificates.find((certificate) => certificate.learningPathId === selectedPathId) || null);
-  };
 
   useEffect(() => {
     let active = true;

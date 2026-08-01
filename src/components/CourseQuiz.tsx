@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { ArrowLeft, CheckCircle2, ChevronRight, ChevronLeft, HelpCircle, RefreshCw, AlertTriangle } from "lucide-react";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
-import { NeoBadge } from "./NeoBadge";
 import { User, Course, Question } from "../types";
 import { fetchCatalogCourseBySlug } from "../services/catalogService";
 import { fetchQuizForCourse, fetchQuizQuestions, submitQuizAttemptApi, fetchQuizSummary } from "../services/quizService";
@@ -32,8 +31,6 @@ export const CourseQuiz: React.FC<CourseQuizProps> = ({
   const [submitting, setSubmitting] = useState(false);
   const [showConfirmSubmit, setShowConfirmSubmit] = useState(false);
   const [bestScore, setBestScore] = useState<number | null>(null);
-
-  const tempStorageKey = `cyber_academy_temp_answers_${currentUser.uid}_${matchedCourse?.id || courseSlug}`;
 
   useEffect(() => {
     const loadQuizData = async () => {
