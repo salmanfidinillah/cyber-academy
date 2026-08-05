@@ -8,9 +8,33 @@ export interface SeedItem {
 
 export interface SeedPlan {
   totalSource: number;
-  skippedExisting: number;
+  existing: number;
   itemsToCreate: SeedItem[];
-  operations: Array<{ type: "create"; collection: string; id: string; data: any }>;
+  itemsToUpdate: SeedItem[];
+  unexpectedExistingIds: string[];
+  operations: Array<{
+    type: "set";
+    mode: "create" | "update";
+    collection: string;
+    id: string;
+    data: any;
+  }>;
+}
+
+function assertSequentialOrder(scope: string, items: any[]): void {
+  const actual = items
+    .map((item) => Number(item.order))
+    .sort((first, second) => first - second);
+  const expected = Array.from({ length: items.length }, (_, index) => index + 1);
+
+  if (
+    actual.some((order) => !Number.isInteger(order) || order < 1) ||
+    actual.some((order, index) => order !== expected[index])
+  ) {
+    throw new Error(
+      `Invalid order in ${scope}. Expected ${expected.join(", ")}, received ${actual.join(", ")}.`,
+    );
+  }
 }
 
 export function validateSeedData(
@@ -87,6 +111,8 @@ export function validateSeedData(
 
   if (quizzesData.length > 0) {
     const quizIds = new Set(quizzesData.map((q) => q.id));
+    const quizById = new Map(quizzesData.map((quiz) => [quiz.id, quiz]));
+    const lessonById = new Map(lessonsData.map((lesson) => [lesson.id, lesson]));
     for (const q of quizzesData) {
       if (!courseIds.has(q.courseId)) {
         throw new Error(`Parent courseId '${q.courseId}' for quiz '${q.id}' not found.`);
@@ -100,6 +126,12 @@ export function validateSeedData(
       if (!courseIds.has(qn.courseId)) {
         throw new Error(`Parent courseId '${qn.courseId}' for question '${qn.id}' not found.`);
       }
+      const parentQuiz = quizById.get(qn.quizId);
+      if (parentQuiz?.courseId !== qn.courseId) {
+        throw new Error(
+          `Question '${qn.id}' courseId '${qn.courseId}' does not match quiz '${qn.quizId}' courseId '${parentQuiz?.courseId}'.`,
+        );
+      }
       const options = qn.options || [];
       if (options.length < 2 || options.length > 6) {
         throw new Error(`Question '${qn.id}' must have between 2 and 6 options.`);
@@ -111,7 +143,63 @@ export function validateSeedData(
       if (!optionIds.has(qn.correctOptionId)) {
         throw new Error(`Question '${qn.id}' correctOptionId '${qn.correctOptionId}' not found in options.`);
       }
+      if (qn.recommendedLessonId) {
+        const recommendedLesson = lessonById.get(qn.recommendedLessonId);
+        if (!recommendedLesson) {
+          throw new Error(
+            `Question '${qn.id}' recommendedLessonId '${qn.recommendedLessonId}' not found.`,
+          );
+        }
+      }
     }
+  }
+
+  // 4. Counts and display order must be derived from the real child data.
+  for (const path of learningPathsData) {
+    const pathCourses = coursesData.filter(
+      (course) => (course.learningPathId || "beginner-path") === path.id,
+    );
+    if (pathCourses.length === 0) {
+      throw new Error(`Learning path '${path.id}' has no courses.`);
+    }
+    if (path.courseCount !== undefined && path.courseCount !== pathCourses.length) {
+      throw new Error(
+        `Learning path '${path.id}' courseCount is ${path.courseCount}, expected ${pathCourses.length}.`,
+      );
+    }
+    assertSequentialOrder(`courses of learning path '${path.id}'`, pathCourses);
+  }
+
+  for (const course of coursesData) {
+    const courseLessons = lessonsData.filter((lesson) => lesson.courseId === course.id);
+    const courseQuizzes = quizzesData.filter((quiz) => quiz.courseId === course.id);
+    if (courseLessons.length === 0) {
+      throw new Error(`Course '${course.id}' has no lessons.`);
+    }
+    if (course.lessonCount !== undefined && course.lessonCount !== courseLessons.length) {
+      throw new Error(
+        `Course '${course.id}' lessonCount is ${course.lessonCount}, expected ${courseLessons.length}.`,
+      );
+    }
+    if (quizzesData.length > 0 && courseQuizzes.length !== 1) {
+      throw new Error(
+        `Course '${course.id}' must have exactly one quiz, found ${courseQuizzes.length}.`,
+      );
+    }
+    assertSequentialOrder(`lessons of course '${course.id}'`, courseLessons);
+  }
+
+  for (const quiz of quizzesData) {
+    const quizQuestions = questionsData.filter((question) => question.quizId === quiz.id);
+    if (quizQuestions.length === 0) {
+      throw new Error(`Quiz '${quiz.id}' has no questions.`);
+    }
+    if (quiz.questionCount !== undefined && quiz.questionCount !== quizQuestions.length) {
+      throw new Error(
+        `Quiz '${quiz.id}' questionCount is ${quiz.questionCount}, expected ${quizQuestions.length}.`,
+      );
+    }
+    assertSequentialOrder(`questions of quiz '${quiz.id}'`, quizQuestions);
   }
 
   return true;
@@ -267,19 +355,27 @@ export function planSeedOperations(
   const totalSource = allSeedItems.length;
 
   const itemsToCreate: SeedItem[] = [];
-  let skippedExisting = 0;
+  const itemsToUpdate: SeedItem[] = [];
+  const sourceKeys = new Set(allSeedItems.map((item) => `${item.collection}/${item.id}`));
 
   for (const item of allSeedItems) {
     const compositeKey = `${item.collection}/${item.id}`;
     if (existingDocIds.has(compositeKey)) {
-      skippedExisting++;
+      itemsToUpdate.push(item);
     } else {
       itemsToCreate.push(item);
     }
   }
 
-  const operations = itemsToCreate.map((item) => ({
-    type: "create" as const,
+  const unexpectedExistingIds = [...existingDocIds]
+    .filter((compositeKey) => !sourceKeys.has(compositeKey))
+    .sort();
+
+  const operations = allSeedItems.map((item) => ({
+    type: "set" as const,
+    mode: existingDocIds.has(`${item.collection}/${item.id}`)
+      ? ("update" as const)
+      : ("create" as const),
     collection: item.collection,
     id: item.id,
     data: item.data,
@@ -287,8 +383,10 @@ export function planSeedOperations(
 
   return {
     totalSource,
-    skippedExisting,
+    existing: itemsToUpdate.length,
     itemsToCreate,
+    itemsToUpdate,
+    unexpectedExistingIds,
     operations,
   };
 }

@@ -321,9 +321,9 @@ describe("Admin Content CRUD, Security Rules & Catalog Service", () => {
 
   describe("Seed Data Validation", () => {
     it("validates valid seed data and rejects corrupt seed data", () => {
-      const validLps = [{ id: "lp1", slug: "lp1" }];
-      const validCourses = [{ id: "c1", learningPathId: "lp1", slug: "c1" }];
-      const validLessons = [{ id: "l1", courseId: "c1", slug: "l1" }];
+      const validLps = [{ id: "lp1", slug: "lp1", courseCount: 1 }];
+      const validCourses = [{ id: "c1", learningPathId: "lp1", slug: "c1", lessonCount: 1, order: 1 }];
+      const validLessons = [{ id: "l1", courseId: "c1", slug: "l1", order: 1 }];
 
       expect(validateSeedData(validLps, validCourses, validLessons)).toBe(true);
 
