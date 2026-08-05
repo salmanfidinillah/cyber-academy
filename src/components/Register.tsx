@@ -59,7 +59,7 @@ export const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
 
     try {
       await registerWithEmail(name, normalizedEmail, password);
-      setSuccess("Akun Anda berhasil dibuat!");
+      setSuccess("email-verification");
       setTimeout(() => {
         onNavigate("/verify-email");
       }, 800);
@@ -123,7 +123,19 @@ export const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
         {success && (
           <div className="flex items-start space-x-3 bg-pastel-mint p-4 rounded-xl border-3 border-brand-border neo-shadow-sm text-brand-text text-xs sm:text-sm font-semibold">
             <CheckCircle className="w-5 h-5 flex-shrink-0 text-brand-text" />
-            <span>{success}</span>
+            {success === "email-verification" ? (
+              <div className="space-y-2">
+                <p className="font-heading font-bold">Periksa email Anda</p>
+                <p>Email verifikasi telah dikirim ke alamat email yang Anda daftarkan.</p>
+                <p>Silakan periksa Kotak Masuk, Spam, Promosi, atau Semua Email.</p>
+                <p>
+                  Jika email masuk ke folder Spam, pilih “Bukan spam” agar email berikutnya lebih
+                  mudah masuk ke Kotak Masuk.
+                </p>
+              </div>
+            ) : (
+              <span>{success}</span>
+            )}
           </div>
         )}
 

@@ -1,6 +1,13 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
 import { User } from "../types";
-import { subscribeToAuthState, logoutUser, reloadCurrentAuthUser, handleGoogleRedirectResult } from "../services/authService";
+import {
+  subscribeToAuthState,
+  logoutUser,
+  reloadCurrentAuthUser,
+  handleGoogleRedirectResult,
+  isEmailRegistrationProfilePending,
+  markEmailRegistrationProfileReady,
+} from "../services/authService";
 import { subscribeToUserProfile, createUserProfileIfMissing, getUserProfile } from "../services/userService";
 import { User as FirebaseUser, getIdTokenResult } from "firebase/auth";
 
@@ -132,6 +139,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
           firebaseUser.uid,
           (profileData) => {
             if (profileData) {
+              markEmailRegistrationProfileReady(firebaseUser.uid);
               if (profileData.accountStatus === "disabled") {
                 logoutUser().then(() => {
                   setAuthUser(null);
@@ -146,8 +154,15 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
               setCurrentUser(profileData);
               setAuthError(null);
               setLoading(false);
+            } else if (isEmailRegistrationProfilePending(firebaseUser.uid)) {
+              // Auth state changes before the registration flow finishes creating
+              // the Firestore profile. Keep guards in loading state until the
+              // profile listener receives the newly-created document.
+              setCurrentUser(null);
+              setAuthError(null);
+              setLoading(true);
             } else {
-              // Fail closed: Profile does not exist yet (e.g. race condition/not created)
+              // Fail closed after initialization: the profile is genuinely missing.
               setCurrentUser(null);
               setAuthError("Profil pengguna tidak ditemukan. Silakan klik 'Coba Lagi' untuk memulihkan.");
               setLoading(false);
