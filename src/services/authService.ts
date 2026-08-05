@@ -22,6 +22,19 @@ import {
 import { auth, initPersistencePromise } from "../lib/firebaseClient";
 import { createUserProfileIfMissing } from "./userService";
 
+let emailRegistrationInProgress = false;
+let pendingEmailRegistrationProfileUid: string | null = null;
+
+export function isEmailRegistrationProfilePending(uid: string): boolean {
+  return emailRegistrationInProgress || pendingEmailRegistrationProfileUid === uid;
+}
+
+export function markEmailRegistrationProfileReady(uid: string): void {
+  if (pendingEmailRegistrationProfileUid === uid) {
+    pendingEmailRegistrationProfileUid = null;
+  }
+}
+
 // Map Firebase authentication error codes to custom Indonesian user-friendly messages
 export function mapFirebaseAuthError(code: string): string {
   switch (code) {
@@ -60,10 +73,14 @@ export function mapFirebaseAuthError(code: string): string {
 
 export async function registerWithEmail(displayName: string, email: string, password: string): Promise<FirebaseUser> {
   let createdUser: FirebaseUser | null = null;
+  let firestoreProfileCreated = false;
+  emailRegistrationInProgress = true;
+  pendingEmailRegistrationProfileUid = null;
   try {
     await initPersistencePromise;
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     createdUser = userCredential.user;
+    pendingEmailRegistrationProfileUid = createdUser.uid;
     
     // Update display name in Firebase Auth
     await updateProfile(createdUser, { displayName });
@@ -75,6 +92,7 @@ export async function registerWithEmail(displayName: string, email: string, pass
     // Create initial user profile in Firestore
     try {
       await createUserProfileIfMissing(refreshedUser);
+      firestoreProfileCreated = true;
     } catch (firestoreErr) {
       console.error("Failed to create Firestore profile after registration. Deleting Auth user:", firestoreErr);
       try {
@@ -82,6 +100,7 @@ export async function registerWithEmail(displayName: string, email: string, pass
       } catch (deleteErr) {
         console.error("Failed to delete orphaned Auth user:", deleteErr);
       }
+      pendingEmailRegistrationProfileUid = null;
       throw firestoreErr;
     }
     
@@ -90,15 +109,23 @@ export async function registerWithEmail(displayName: string, email: string, pass
       await sendEmailVerification(refreshedUser);
     } catch (verifErr) {
       console.error("Failed to send verification email during registration:", verifErr);
+      throw new Error(
+        "Akun berhasil dibuat, tetapi email verifikasi belum dapat dikirim. Silakan coba kirim ulang email verifikasi atau kembali beberapa saat lagi."
+      );
     }
     
     return refreshedUser;
   } catch (error: any) {
     console.error("Registration error:", error);
+    if (!firestoreProfileCreated) {
+      pendingEmailRegistrationProfileUid = null;
+    }
     if (error.code) {
       throw new Error(mapFirebaseAuthError(error.code));
     }
     throw error;
+  } finally {
+    emailRegistrationInProgress = false;
   }
 }
 
