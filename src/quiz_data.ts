@@ -1,6 +1,10 @@
 import { Quiz, Question } from "./types";
 import { intermediateQuestions, intermediateQuizzes } from "./intermediate_data";
 import { advancedQuestions, advancedQuizzes } from "./advanced_data";
+import {
+  liveCatalogAdditionalQuestions,
+  liveCatalogAdditionalQuizzes,
+} from "./live_catalog_additions";
 
 export const quizzes: Quiz[] = [
   {
@@ -52,7 +56,8 @@ export const quizzes: Quiz[] = [
     updatedAt: "2026-07-19T00:00:00Z"
   },
   ...intermediateQuizzes,
-  ...advancedQuizzes
+  ...advancedQuizzes,
+  ...liveCatalogAdditionalQuizzes
 ];
 
 export const questions: Question[] = [
@@ -384,7 +389,8 @@ export const questions: Question[] = [
     status: "published"
   },
   ...intermediateQuestions,
-  ...advancedQuestions
+  ...advancedQuestions,
+  ...liveCatalogAdditionalQuestions
 ];
 
 export const questionsByQuiz: Record<string, Question[]> = questions.reduce((acc, q) => {

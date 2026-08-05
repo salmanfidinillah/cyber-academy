@@ -1,6 +1,24 @@
 import { Feature, LearningPath, FaqItem, ProblemSolution, Step, Course, Lesson } from "./types";
 import { intermediateCourses, intermediateLessons } from "./intermediate_data";
 import { advancedCourses, advancedLessons } from "./advanced_data";
+import {
+  liveCatalogAdditionalCourses,
+  liveCatalogAdditionalLessons,
+} from "./live_catalog_additions";
+
+const completeIntermediateCourses = [
+  ...intermediateCourses,
+  ...liveCatalogAdditionalCourses.filter(
+    (course) => course.learningPathId === "intermediate-path",
+  ),
+].sort((first, second) => first.order - second.order);
+
+const completeAdvancedCourses = [
+  ...advancedCourses,
+  ...liveCatalogAdditionalCourses.filter(
+    (course) => course.learningPathId === "advanced-path",
+  ),
+].sort((first, second) => first.order - second.order);
 
 export const features: Feature[] = [
   {
@@ -120,8 +138,8 @@ export const courses: Course[] = [
     lessonCount: 2,
     status: "published"
   },
-  ...intermediateCourses,
-  ...advancedCourses
+  ...completeIntermediateCourses,
+  ...completeAdvancedCourses
 ];
 
 export const lessons: Lesson[] = [
@@ -422,7 +440,8 @@ Mari lakukan audit keamanan media sosial kita dengan langkah taktis berikut:
     status: "published"
   },
   ...intermediateLessons,
-  ...advancedLessons
+  ...advancedLessons,
+  ...liveCatalogAdditionalLessons
 ];
 
 export const learningPaths: LearningPath[] = [
@@ -448,12 +467,12 @@ export const learningPaths: LearningPath[] = [
     title: "Intermediate: Deteksi & Pertahanan Aktif",
     description: "Beranjak dari fondasi menuju kemampuan mengenali ancaman, melindungi jaringan dan aplikasi, serta melakukan respons defensif dasar.",
     level: "Intermediate",
-    courseCount: intermediateCourses.length,
-    durationMinutes: intermediateCourses.reduce((total, course) => total + course.estimatedDuration, 0),
+    courseCount: completeIntermediateCourses.length,
+    durationMinutes: completeIntermediateCourses.reduce((total, course) => total + course.estimatedDuration, 0),
     xpReward: 500,
     bgColor: "bg-pastel-blue",
     badgeName: "Intermediate Master",
-    courses: intermediateCourses.map((course) => ({
+    courses: completeIntermediateCourses.map((course) => ({
       title: course.title,
       description: course.description,
       lessonsCount: course.lessonCount,
@@ -466,12 +485,12 @@ export const learningPaths: LearningPath[] = [
     title: "Advanced: Pengamanan Sistem Mendalam",
     description: "Pelajari assessment legal, secure development, forensik, analisis malware aman, threat intelligence, SIEM, respons insiden, dan arsitektur Zero Trust.",
     level: "Advanced",
-    courseCount: advancedCourses.length,
-    durationMinutes: advancedCourses.reduce((total, course) => total + course.estimatedDuration, 0),
+    courseCount: completeAdvancedCourses.length,
+    durationMinutes: completeAdvancedCourses.reduce((total, course) => total + course.estimatedDuration, 0),
     xpReward: 800,
     bgColor: "bg-pastel-lavender",
     badgeName: "Advanced Master",
-    courses: advancedCourses.map((course) => ({
+    courses: completeAdvancedCourses.map((course) => ({
       title: course.title,
       description: course.description,
       lessonsCount: course.lessonCount,

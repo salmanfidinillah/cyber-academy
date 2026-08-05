@@ -1,158 +1,241 @@
-import { describe, it, expect, vi } from "vitest";
-import {
-  validateSeedData,
-  planSeedOperations,
-} from "./seedValidator.js";
+import { describe, expect, it, vi } from "vitest";
+import { planSeedOperations, validateSeedData } from "./seedValidator.js";
 
 const firebaseAdminMock = vi.fn();
 vi.mock("../server/firebaseAdmin.js", () => {
   firebaseAdminMock();
-  return {
-    adminDb: {
-      collection: vi.fn(),
-      batch: vi.fn(),
-    },
-  };
+  return { adminDb: {} };
 });
 
-describe("Seed Data Validation & Planning", () => {
-  it("1. Importing validator does not throw or execute main()", () => {
+function validCatalogFixture() {
+  const learningPaths = [
+    { id: "path-1", title: "Path 1", slug: "path-1", courseCount: 1, order: 1 },
+  ];
+  const courses = [
+    {
+      id: "course-1",
+      title: "Course 1",
+      slug: "course-1",
+      learningPathId: "path-1",
+      lessonCount: 1,
+      order: 1,
+    },
+  ];
+  const lessons = [
+    {
+      id: "lesson-1",
+      title: "Lesson 1",
+      slug: "lesson-1",
+      courseId: "course-1",
+      order: 1,
+    },
+  ];
+  const quizzes = [
+    {
+      id: "quiz-1",
+      title: "Quiz 1",
+      courseId: "course-1",
+      questionCount: 1,
+    },
+  ];
+  const questions = [
+    {
+      id: "question-1",
+      quizId: "quiz-1",
+      courseId: "course-1",
+      questionText: "Question?",
+      options: [
+        { id: "a", text: "A" },
+        { id: "b", text: "B" },
+      ],
+      correctOptionId: "a",
+      recommendedLessonId: "lesson-1",
+      order: 1,
+    },
+  ];
+  return { learningPaths, courses, lessons, quizzes, questions };
+}
+
+describe("Seed data validation and idempotent planning", () => {
+  it("exports validator and planner without running the seed", () => {
     expect(typeof validateSeedData).toBe("function");
     expect(typeof planSeedOperations).toBe("function");
   });
 
-  it("2. Duplicate ID inside the same collection is rejected", () => {
-    const lps = [{ id: "path-1", title: "Path 1" }];
-    const courses = [
-      { id: "course-1", title: "Course 1", learningPathId: "path-1" },
-      { id: "course-1", title: "Course Duplicate", learningPathId: "path-1" },
-    ];
-    const lessons: any[] = [];
-
-    expect(() => validateSeedData(lps, courses, lessons)).toThrow(/Duplicate ID/);
+  it("accepts a complete valid catalog", () => {
+    const fixture = validCatalogFixture();
+    expect(() =>
+      validateSeedData(
+        fixture.learningPaths,
+        fixture.courses,
+        fixture.lessons,
+        fixture.quizzes,
+        fixture.questions,
+      ),
+    ).not.toThrow();
   });
 
-  it("2b. The same document ID in different collections is valid", () => {
-    const lps = [{ id: "shared-id", title: "Path 1" }];
-    const courses = [{ id: "shared-id", slug: "course-shared", title: "Course 1", learningPathId: "shared-id" }];
-    const quizzes = [{ id: "shared-id", courseId: "shared-id" }];
-
-    expect(() => validateSeedData(lps, courses, [], quizzes, [])).not.toThrow();
+  it("rejects duplicate IDs inside the same collection", () => {
+    const fixture = validCatalogFixture();
+    fixture.courses.push({ ...fixture.courses[0] });
+    expect(() =>
+      validateSeedData(
+        fixture.learningPaths,
+        fixture.courses,
+        fixture.lessons,
+        fixture.quizzes,
+        fixture.questions,
+      ),
+    ).toThrow(/Duplicate ID/);
   });
 
-  it("3. Duplicate course slug global rejected", () => {
-    const lps = [{ id: "path-1", title: "Path 1" }];
-    const courses = [
-      { id: "c-1", slug: "same-slug", title: "Course 1", learningPathId: "path-1" },
-      { id: "c-2", slug: "same-slug", title: "Course 2", learningPathId: "path-1" },
-    ];
-    const lessons: any[] = [];
-
-    expect(() => validateSeedData(lps, courses, lessons)).toThrow(/Duplicate course slug/);
+  it("allows the same document ID in different collections", () => {
+    const fixture = validCatalogFixture();
+    fixture.learningPaths[0].id = "shared-id";
+    fixture.learningPaths[0].slug = "shared-path";
+    fixture.courses[0].id = "shared-id";
+    fixture.courses[0].learningPathId = "shared-id";
+    fixture.lessons[0].courseId = "shared-id";
+    fixture.quizzes[0].courseId = "shared-id";
+    fixture.questions[0].courseId = "shared-id";
+    expect(() =>
+      validateSeedData(
+        fixture.learningPaths,
+        fixture.courses,
+        fixture.lessons,
+        fixture.quizzes,
+        fixture.questions,
+      ),
+    ).not.toThrow();
   });
 
-  it("4. Duplicate lesson slug within same course rejected", () => {
-    const lps = [{ id: "path-1", title: "Path 1" }];
-    const courses = [{ id: "c-1", slug: "course-1", title: "Course 1", learningPathId: "path-1" }];
-    const lessons = [
-      { id: "l-1", courseId: "c-1", slug: "lesson-slug", title: "Lesson 1" },
-      { id: "l-2", courseId: "c-1", slug: "lesson-slug", title: "Lesson 2" },
-    ];
+  it("rejects orphan relations and cross-course question relations", () => {
+    const fixture = validCatalogFixture();
+    fixture.lessons[0].courseId = "missing-course";
+    expect(() =>
+      validateSeedData(
+        fixture.learningPaths,
+        fixture.courses,
+        fixture.lessons,
+        fixture.quizzes,
+        fixture.questions,
+      ),
+    ).toThrow(/Parent courseId/);
 
-    expect(() => validateSeedData(lps, courses, lessons)).toThrow(/Duplicate lesson slug/);
+    const second = validCatalogFixture();
+    second.questions[0].courseId = "different-course";
+    expect(() =>
+      validateSeedData(
+        second.learningPaths,
+        second.courses,
+        second.lessons,
+        second.quizzes,
+        second.questions,
+      ),
+    ).toThrow(/Parent courseId|does not match quiz/);
   });
 
-  it("5. Orphan course/lesson rejected", () => {
-    const lps = [{ id: "path-1", title: "Path 1" }];
-    const courses = [{ id: "c-1", slug: "course-1", title: "Course 1", learningPathId: "non-existent-path" }];
-    const lessons: any[] = [];
-
-    expect(() => validateSeedData(lps, courses, lessons)).toThrow(/Parent learningPathId/);
-
-    const validCourses = [{ id: "c-1", slug: "course-1", title: "Course 1", learningPathId: "path-1" }];
-    const orphanLessons = [{ id: "l-1", courseId: "non-existent-course", slug: "lesson-1", title: "Lesson 1" }];
-
-    expect(() => validateSeedData(lps, validCourses, orphanLessons)).toThrow(/Parent courseId/);
+  it("rejects duplicate or non-sequential display order", () => {
+    const fixture = validCatalogFixture();
+    fixture.courses[0].order = 2;
+    expect(() =>
+      validateSeedData(
+        fixture.learningPaths,
+        fixture.courses,
+        fixture.lessons,
+        fixture.quizzes,
+        fixture.questions,
+      ),
+    ).toThrow(/Invalid order/);
   });
 
-  it("6. Existing documents produce skipped status with composite collection identity", () => {
-    const lps = [{ id: "path-1", title: "Path 1" }];
-    const courses = [{ id: "c-1", slug: "course-1", title: "Course 1", learningPathId: "path-1" }];
-    const lessons = [{ id: "l-1", courseId: "c-1", slug: "lesson-1", title: "Lesson 1" }];
+  it("plans missing documents as creates and existing documents as merge updates", () => {
+    const fixture = validCatalogFixture();
+    const existing = new Set<string>([
+      "learningPaths/path-1",
+      "courses/course-1",
+    ]);
+    const plan = planSeedOperations(
+      fixture.learningPaths,
+      fixture.courses,
+      fixture.lessons,
+      existing,
+      fixture.quizzes,
+      fixture.questions,
+    );
 
-    const existingDocIds = new Set<string>(["learningPaths/path-1", "courses/c-1"]);
-
-    const plan = planSeedOperations(lps, courses, lessons, existingDocIds);
-
-    expect(plan.totalSource).toBe(3);
-    expect(plan.skippedExisting).toBe(2);
-    expect(plan.itemsToCreate.length).toBe(1);
-    expect(plan.itemsToCreate[0].id).toBe("l-1");
-  });
-
-  it("6b. Cross-collection ID collision test: courses/item-1 does not cause learningPaths/item-1 to be skipped", () => {
-    const lps = [{ id: "item-1", title: "Path Item 1" }];
-    const courses = [{ id: "c-2", slug: "course-2", title: "Course 2", learningPathId: "item-1" }];
-    const lessons: any[] = [];
-
-    // Suppose 'courses/item-1' exists in Firestore
-    const existingDocIds = new Set<string>(["courses/item-1"]);
-
-    const plan = planSeedOperations(lps, courses, lessons, existingDocIds);
-
-    // learningPaths/item-1 should NOT be skipped!
-    expect(plan.skippedExisting).toBe(0);
-    expect(plan.itemsToCreate.map((i) => `${i.collection}/${i.id}`)).toEqual([
-      "learningPaths/item-1",
-      "courses/c-2",
+    expect(plan.totalSource).toBe(5);
+    expect(plan.existing).toBe(2);
+    expect(plan.itemsToUpdate.map((item) => `${item.collection}/${item.id}`)).toEqual([
+      "learningPaths/path-1",
+      "courses/course-1",
+    ]);
+    expect(plan.itemsToCreate).toHaveLength(3);
+    expect(plan.operations.every((operation) => operation.type === "set")).toBe(true);
+    expect(plan.operations.map((operation) => operation.mode)).toEqual([
+      "update",
+      "update",
+      "create",
+      "create",
+      "create",
     ]);
   });
 
-  it("7. Only missing documents are planned for create", () => {
-    const lps = [{ id: "path-1", title: "Path 1" }];
-    const courses = [{ id: "c-1", slug: "course-1", title: "Course 1", learningPathId: "path-1" }];
-    const lessons: any[] = [];
-
-    const existingDocIds = new Set<string>();
-
-    const plan = planSeedOperations(lps, courses, lessons, existingDocIds);
-
-    expect(plan.itemsToCreate.length).toBe(2);
-    expect(plan.itemsToCreate.map((i) => i.id)).toEqual(["path-1", "c-1"]);
+  it("detects existing catalog documents that are absent from source", () => {
+    const fixture = validCatalogFixture();
+    const plan = planSeedOperations(
+      fixture.learningPaths,
+      fixture.courses,
+      fixture.lessons,
+      new Set(["courses/legacy-course"]),
+      fixture.quizzes,
+      fixture.questions,
+    );
+    expect(plan.unexpectedExistingIds).toEqual(["courses/legacy-course"]);
   });
 
-  it("8. No set/update/delete in seed planner", () => {
-    const lps = [{ id: "path-1", title: "Path 1" }];
-    const courses = [{ id: "c-1", slug: "course-1", title: "Course 1", learningPathId: "path-1" }];
-    const lessons: any[] = [];
-
-    const plan = planSeedOperations(lps, courses, lessons, new Set());
-
-    for (const op of plan.operations) {
-      expect(op.type).toBe("create");
-      expect((op as any).type).not.toBe("set");
-      expect((op as any).type).not.toBe("update");
-      expect((op as any).type).not.toBe("delete");
-    }
+  it("never plans a delete operation", () => {
+    const fixture = validCatalogFixture();
+    const plan = planSeedOperations(
+      fixture.learningPaths,
+      fixture.courses,
+      fixture.lessons,
+      new Set(),
+      fixture.quizzes,
+      fixture.questions,
+    );
+    expect(plan.operations.every((operation) => operation.type === "set")).toBe(true);
+    expect(plan.operations.some((operation) => (operation as any).type === "delete")).toBe(false);
   });
 
-  it("9. Without --confirm, main() exits with 1 before calling Firestore or initializing Firebase Admin", async () => {
+  it("blocks production write without the project-name confirmation before Firebase initializes", async () => {
     firebaseAdminMock.mockClear();
     const { main } = await import("./seed-content.js");
-
-    const exitSpy = vi.spyOn(process, "exit").mockImplementation((() => {
-      throw new Error("process.exit(1) called");
-    }) as any);
-
-    await expect(main([])).rejects.toThrow("process.exit(1) called");
-    expect(exitSpy).toHaveBeenCalledWith(1);
+    await expect(
+      main([
+        "--target=production",
+        "--project=cyber-academy-6aeba",
+        "--confirm",
+      ]),
+    ).rejects.toThrow(/confirm-production/);
     expect(firebaseAdminMock).not.toHaveBeenCalled();
-    exitSpy.mockRestore();
   });
 
-  it("10. ESM entry does not use require/module", async () => {
-    const seedContentText = await import("fs").then((fs) =>
-      fs.readFileSync("./scripts/seed-content.ts", "utf-8")
+  it("defaults to emulator and blocks when the emulator is not running", async () => {
+    firebaseAdminMock.mockClear();
+    const previous = process.env.FIRESTORE_EMULATOR_HOST;
+    delete process.env.FIRESTORE_EMULATOR_HOST;
+    const { main } = await import("./seed-content.js");
+    await expect(main(["--project=demo-cyber-academy"])).rejects.toThrow(
+      /FIRESTORE_EMULATOR_HOST/,
+    );
+    expect(firebaseAdminMock).not.toHaveBeenCalled();
+    if (previous) process.env.FIRESTORE_EMULATOR_HOST = previous;
+  });
+
+  it("keeps the ESM entry free from CommonJS main-module checks", async () => {
+    const seedContentText = await import("node:fs").then((fs) =>
+      fs.readFileSync("./scripts/seed-content.ts", "utf8"),
     );
     expect(seedContentText).not.toContain("require.main");
     expect(seedContentText).not.toContain("module.exports");

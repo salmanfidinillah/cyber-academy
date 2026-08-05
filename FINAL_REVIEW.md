@@ -1,6 +1,6 @@
 # Cyber Academy AI — Final Engineering Handoff
 
-Tanggal audit: 27 Juli 2026
+Tanggal audit katalog terbaru: 1 Agustus 2026
 
 ## Status rilis
 
@@ -10,8 +10,8 @@ Kode sumber sudah melalui audit final frontend, backend, autentikasi, admin, kur
 
 - Firebase Authentication: email/password, Google, verifikasi email, reset password.
 - Profil pengguna dan avatar Firebase Storage.
-- Katalog Firestore: 3 learning path, 19 course, 67 lesson, 19 quiz, dan 130 soal.
-- Jalur Beginner 4 kelas, Intermediate 7 kelas, dan Advanced 8 kelas.
+- Katalog Firestore: 3 learning path, 25 course, 79 lesson, 25 quiz, dan 160 soal.
+- Jalur Beginner 4 kelas, Intermediate 10 kelas, dan Advanced 11 kelas.
 - Progress lesson/course/path, XP, level, streak, reset, pagination transaksi, dan unlock prerequisite.
 - Quiz server-authoritative, feedback, remedial, skor terbaik, dan XP idempotent.
 - Empat simulasi interaktif: email phishing, WhatsApp scam, vishing, dan sandbox malware fiktif.
@@ -22,6 +22,11 @@ Kode sumber sudah melalui audit final frontend, backend, autentikasi, admin, kur
 - Admin CRUD content, quiz, users/custom claims, simulations, badges, certificates, dashboard, serta audit log.
 
 ## Perbaikan final penting
+
+- Menyelesaikan selisih source 19 course dan produksi 25 course melalui managed backup serta ekspor katalog read-only.
+- Memulihkan enam course produksi beserta 12 lesson, 6 quiz, dan 30 question asli ke source tanpa membuat konten fiktif.
+- Menormalkan order Intermediate menjadi 1–10 dan Advanced menjadi 1–11.
+- Mengubah seed create-only menjadi merge-upsert idempotent, dry-run default, guard emulator/test/production, validasi relasi/order, dan deteksi dokumen katalog tak dikenal tanpa delete otomatis.
 
 - Mengganti satu halaman phishing lama menjadi player data-driven untuk empat simulasi.
 - Menambahkan endpoint pemeriksaan jawaban simulasi dan penilaian final server-authoritative.
@@ -39,9 +44,12 @@ Kode sumber sudah melalui audit final frontend, backend, autentikasi, admin, kur
 ## Hasil verifikasi
 
 - `npm run lint`: lulus.
-- `npm test`: 13 file, 138 test lulus.
+- `npm run typecheck`: lulus.
+- `npm test`: 35 file, 334 test lulus pada verifikasi sinkronisasi katalog.
 - `npm run build`: lulus; frontend dan `dist/server.cjs` terbentuk.
-- Validasi seed in-memory: lulus, total 238 dokumen stabil.
+- Validasi seed in-memory: lulus, total 292 dokumen stabil.
+- Managed export produksi: selesai, 577 dokumen seluruh database tersimpan di bucket backup privat.
+- Ekspor read-only katalog: 3 path, 25 course, 79 lesson, 25 quiz, dan 160 question; hanya lima koleksi katalog.
 - Smoke test produksi:
   - `/api/health`: HTTP 200.
   - `/`: HTTP 200 dan SPA title benar.
@@ -71,15 +79,24 @@ Tidak ada advisory critical. Jangan menjalankan `npm audit fix --force`, karena 
    firebase deploy --only firestore:rules,firestore:indexes,storage
    ```
 
-5. Seed katalog sekali atau setelah menambah project Firestore:
+5. Lakukan dry-run katalog setelah managed backup selesai:
 
    ```bash
-   npm run seed-content -- --confirm
+   npm run seed:content -- \
+     --target=production --project=cyber-academy-6aeba --dry-run
    ```
 
-   Seed hanya membuat dokumen yang belum ada dan aman dijalankan ulang.
+6. Jika dry-run tidak melaporkan dokumen tak dikenal, lakukan merge-upsert produksi:
 
-6. Tetapkan admin pertama:
+   ```bash
+   npm run seed:content -- \
+     --target=production --project=cyber-academy-6aeba --confirm \
+     --confirm-production=cyber-academy-6aeba
+   ```
+
+   Seed tidak melakukan delete. Panduan deployment dan rollback lengkap terdapat di `docs/catalog-sync.md`.
+
+7. Tetapkan admin pertama:
 
    ```bash
    npm run set-admin -- --email alamat-admin@email.com
@@ -87,7 +104,7 @@ Tidak ada advisory critical. Jangan menjalankan `npm audit fix --force`, karena 
 
    Setelah berhasil, logout lalu login kembali agar custom claim masuk ke token.
 
-7. Tambahkan domain produksi di Firebase Authentication → Settings → Authorized domains.
+8. Tambahkan domain produksi di Firebase Authentication → Settings → Authorized domains.
 
 ## Cloud Run
 

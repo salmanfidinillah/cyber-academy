@@ -4,18 +4,17 @@
 
 Cyber Academy AI adalah MVP full-stack yang dapat digunakan dengan Firebase Authentication, Cloud Firestore, Firebase Storage, Express, dan Gemini. Data keamanan-kritis (progress, XP, kuis, simulasi, badge, sertifikat, role admin, audit log, dan riwayat AI Tutor) diproses melalui backend terautentikasi; browser tidak menentukan nilai atau hadiah XP.
 
-Katalog belajar kini mencakup 4 kelas Beginner, 7 kelas Intermediate, dan 8 kelas Advanced. Jumlah kelas serta estimasi durasi pada card dihitung dari course published yang benar-benar tersedia. Empat simulasi aktif—email phishing, WhatsApp scam, vishing, dan sandbox malware fiktif—memiliki tutorial, skenario interaktif, feedback server-side, skor terbaik, dan XP idempotent. Rincian implementasi terdapat di `INTERMEDIATE_IMPLEMENTATION.md`, `ADVANCED_IMPLEMENTATION.md`, dan `FINAL_REVIEW.md`.
+Katalog belajar mencakup **4 kelas Beginner, 10 kelas Intermediate, dan 11 kelas Advanced (25 kelas total)**. Statistik lengkap yang berasal dari ekspor read-only Firestore produksi adalah **3 learning path, 25 course, 79 lesson, 25 quiz, dan 160 question**. Jumlah kelas serta estimasi durasi pada card dihitung dari course published yang benar-benar tersedia. Empat simulasi aktif—email phishing, WhatsApp scam, vishing, dan sandbox malware fiktif—memiliki tutorial, skenario interaktif, feedback server-side, skor terbaik, dan XP idempotent. Rincian sinkronisasi katalog dan prosedur aman tersedia di [`docs/catalog-sync.md`](docs/catalog-sync.md).
 
 ### Menjalankan secara lokal
 
 ```bash
 cp .env.example .env
 npm ci
-npm run seed-content -- --confirm
 npm run dev
 ```
 
-Sebelum seed atau menjalankan backend lokal, autentikasikan Application Default Credentials dengan `gcloud auth application-default login`. Pada Cloud Run, gunakan service account runtime yang dipasang pada service. Jangan set `GOOGLE_APPLICATION_CREDENTIALS` atau menyimpan JSON service account di repository maupun environment Cloud Run.
+Seed tidak diperlukan untuk sekadar menjalankan frontend/backend. Jika membutuhkan katalog lokal, gunakan Firestore Emulator; seed secara default menolak project produksi. Pada Cloud Run, gunakan service account runtime yang dipasang pada service. Jangan menyimpan JSON service account, token, atau private key di repository maupun environment Cloud Run.
 
 ### Pemeriksaan sebelum rilis
 
@@ -170,17 +169,36 @@ Aplikasi **Cyber Academy AI** menerapkan arsitektur backend tepercaya untuk mana
   - Seluruh mutasi data (Create, Update, Delete) dijalankan di dalam **Firestore Transaction (`adminDb.runTransaction`)**.
   - Catatan audit log ditulis secara otomatis ke koleksi `adminAuditLogs` di dalam transaksi yang sama. Jika penulisan audit log atau mutasi gagal, seluruh transaksi dibatalkan (rollback).
 
-### 3. Prosedur Seeding Konten (`npm run seed-content`)
-Gunakan skrip seed untuk mengisi data awal Learning Paths, Courses, dan Lessons ke Cloud Firestore secara idempotent, aman, dan atomic dengan composite identity `${collection}/${id}`.
+### 3. Ekspor dan Seeding Katalog Aman
 
-Sesuai standar keamanan, skrip seed menggunakan `batch.create()` (bukan `batch.set()`) sehingga dokumen yang sudah ada tidak akan pernah tertimpa. Skrip **wajib** dijalankan dengan flag `--confirm` untuk mengonfirmasi operasi ke Cloud Firestore:
+Ekspor katalog produksi hanya membaca lima koleksi katalog dan tidak membaca data pengguna:
 
 ```bash
-# Seeding data konten utama ke Cloud Firestore (ESM Execution):
-npm run seed-content -- --confirm
+npm run export:catalog -- --project=PROJECT_ID
 ```
 
-Tanpa flag `--confirm`, skrip akan menampilkan pesan peringatan dan keluar dengan *exit code 1* tanpa menginisialisasi Firebase Admin dan tanpa menyentuh Cloud Firestore.
+Hasilnya disimpan sebagai `firestore-catalog-export.json`. Timestamp dikonversi ke ISO string dan setiap object memuat document ID.
+
+Seed menggunakan `batch.set(..., { merge: true })` sehingga dokumen dengan ID yang sama diperbarui secara idempotent, sedangkan field lain yang tidak didefinisikan source tetap dipertahankan. Seed tidak pernah menghapus dokumen. Sebelum write, validator memeriksa duplicate ID/slug, seluruh relasi, jumlah child, dan urutan. Jika Firestore memiliki dokumen katalog yang tidak terdapat di source, proses berhenti untuk review manual.
+
+Target default adalah emulator dan tanpa `--confirm` operasi menjadi dry-run:
+
+```bash
+# Emulator lokal
+FIRESTORE_EMULATOR_HOST=127.0.0.1:8080 npm run seed:content -- \
+  --target=emulator --project=demo-cyber-academy --confirm
+
+# Dry-run produksi: hanya membaca katalog
+npm run seed:content -- \
+  --target=production --project=cyber-academy-6aeba --dry-run
+
+# Write produksi: jalankan hanya setelah managed backup selesai
+npm run seed:content -- \
+  --target=production --project=cyber-academy-6aeba --confirm \
+  --confirm-production=cyber-academy-6aeba
+```
+
+Jangan menjalankan seed produksi sebelum managed export seluruh database berstatus `Completed`. Jangan mengunggah backup penuh karena dapat memuat data pribadi. Lihat [`docs/catalog-sync.md`](docs/catalog-sync.md) untuk deployment dan rollback.
 
 Sinkronisasi empat badge milestone dapat diperiksa melalui dry-run, lalu
 dijalankan dengan konfirmasi:
@@ -197,7 +215,7 @@ Panduan eligibility, progress, migrasi legacy, dan rollback badge tersedia di
 - **Sumber Tunggal Data Katalog**: `server/services/contentService.ts` membaca dan menulis 100% dari Cloud Firestore. Seluruh fallback ke data statis `src/data.ts` untuk runtime catalog telah dihapus.
 - **Dynamic Dashboard Active Path Selection**: Dashboard memilih `activePath` secara dinamis berdasarkan progres pengguna (mencari path berstatus `in_progress`, lalu `published` pertama).
 - **Tata Cara Verifikasi Katalog Firestore**:
-  1. Jalankan `npm run seed-content -- --confirm` untuk populate initial content.
+  1. Jalankan dry-run dan seed sesuai prosedur aman pada `docs/catalog-sync.md` untuk mengisi atau menyinkronkan katalog.
   2. Buka aplikasi, navigasi ke `/dashboard` atau `/learn/paths`. Katalog dipanggil secara publik dari Firestore via `/api/catalog/paths`.
   3. Mengarsipkan atau menghapus dokumen di koleksi Firestore `learningPaths`/`courses`/`lessons` secara otomatis mencerminkan status konten saat aplikasi melakukan fetch/reload katalog tanpa perlu restart server.
 - **Toleransi Kegagalan & Empty State**: Jika koleksi Firestore kosong, Catalog API mengembalikan array kosong `[]` secara bersih sehingga UI menampilkan *empty state*. Jika Firestore mengalami kesalahan koneksi, server mengembalikan status *500 Internal Server Error* sehingga UI menampilkan state error dengan tombol coba lagi (*retry*).

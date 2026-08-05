@@ -12,6 +12,7 @@
     "lint": "tsc --noEmit",
     "typecheck": "tsc --noEmit",
     "set-admin": "tsx scripts/set-admin.ts",
+    "export:catalog": "tsx scripts/export-live-catalog.ts",
     "seed-content": "tsx scripts/seed-content.ts",
     "seed:content": "tsx scripts/seed-content.ts",
     "seed-badges": "tsx scripts/seed-badges.ts",
