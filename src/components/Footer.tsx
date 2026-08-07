@@ -3,12 +3,13 @@ import { Shield } from "lucide-react";
 
 interface FooterProps {
   onNavigate: (route: string) => void;
+  isLandingPage?: boolean;
 }
 
 const footerLinkClassName =
   "inline-flex min-h-11 items-center rounded-lg px-2 -mx-2 text-sm font-semibold text-brand-text transition-colors hover:bg-white hover:underline focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pastel-yellow focus-visible:ring-offset-2";
 
-export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
+export const Footer: React.FC<FooterProps> = ({ onNavigate, isLandingPage = false }) => {
   const navigateToRoute = (
     event: React.MouseEvent<HTMLAnchorElement>,
     route: string,
@@ -32,7 +33,7 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate }) => {
   };
 
   return (
-    <footer className="mt-16 border-t-4 border-brand-border bg-brand-surface px-4 py-10 text-brand-text sm:px-6 sm:py-12 lg:px-8">
+    <footer className={`mt-16 border-t-4 border-brand-border bg-brand-surface px-4 py-10 text-brand-text sm:px-6 sm:py-12 lg:px-8 ${isLandingPage ? "landing-footer" : ""}`}>
       <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-[minmax(0,1.35fr)_minmax(0,0.8fr)_minmax(0,0.8fr)] lg:gap-10">
         <div className="min-w-0 space-y-4 sm:col-span-2 lg:col-span-1">
           <a

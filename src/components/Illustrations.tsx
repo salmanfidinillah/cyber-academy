@@ -16,14 +16,14 @@ export const Sparkle: React.FC<{ className?: string }> = ({ className = "" }) =>
 // HeroIllustration: Smartphone, Shield, Lock and Cute AI Tutor
 export const HeroIllustration: React.FC = () => {
   return (
-    <div className="relative w-full max-w-[420px] aspect-square mx-auto flex items-center justify-center p-6">
+    <div className="landing-hero-art relative z-10 mx-auto flex aspect-square w-full max-w-[420px] items-center justify-center p-6" role="img" aria-label="Ilustrasi ponsel aman, perisai digital, dan AI Tutor Cyber Academy">
       {/* Background abstract brutalist circles and squares */}
-      <div className="absolute top-8 left-8 w-32 h-32 bg-pastel-lavender neo-border rounded-full -z-10" />
-      <div className="absolute bottom-12 right-6 w-28 h-28 bg-pastel-blue neo-border rounded-2xl rotate-12 -z-10" />
-      <div className="absolute top-1/2 left-4 w-12 h-12 bg-pastel-yellow neo-border rounded-lg -rotate-45 -z-10" />
+      <div className="absolute left-8 top-8 -z-10 h-32 w-32 rounded-full bg-pastel-lavender neo-border" aria-hidden="true" />
+      <div className="absolute bottom-12 right-6 -z-10 h-28 w-28 rotate-12 rounded-2xl bg-pastel-blue neo-border" aria-hidden="true" />
+      <div className="absolute left-4 top-1/2 -z-10 h-12 w-12 -rotate-45 rounded-lg bg-pastel-yellow neo-border" aria-hidden="true" />
 
       {/* Main smartphone frame */}
-      <div className="relative w-[180px] h-[320px] bg-pastel-gray neo-border rounded-[24px] neo-shadow-lg flex flex-col overflow-hidden">
+      <div className="landing-illustration-phone relative flex h-[320px] w-[180px] flex-col overflow-hidden rounded-[24px] bg-pastel-gray neo-border neo-shadow-lg">
         {/* Notch */}
         <div className="w-24 h-5 bg-[#111111] mx-auto rounded-b-xl flex items-center justify-center">
           <div className="w-2 h-2 rounded-full bg-pastel-mint" />
@@ -50,23 +50,23 @@ export const HeroIllustration: React.FC = () => {
       </div>
 
       {/* Giant Shield (floating over phone) */}
-      <div className="absolute -left-2 top-20 w-[140px] h-[160px] bg-pastel-mint neo-border rounded-b-[40px] rounded-t-[10px] neo-shadow-lg flex flex-col items-center justify-center rotate-[-8deg] hover:rotate-0 transition-transform duration-300">
+      <div className="landing-illustration-shield absolute -left-2 top-20 flex h-[160px] w-[140px] rotate-[-8deg] flex-col items-center justify-center rounded-b-[40px] rounded-t-[10px] bg-pastel-mint neo-border neo-shadow-lg">
         <svg className="w-16 h-16 text-[#111111] drop-shadow-[2px_2px_0px_rgba(17,17,17,1)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622C17.176 19.29 21 14.591 21 9c0-1.042-.133-2.052-.382-3.016z" />
         </svg>
         <span className="text-xs font-heading font-bold mt-2 text-[#111111] bg-white px-2 py-0.5 rounded-full neo-border-thin">SHIELD</span>
       </div>
 
       {/* AI Tutor (Cute Robot floating on the right) */}
-      <div className="absolute -right-4 bottom-14 w-[130px] bg-pastel-yellow neo-border rounded-[24px] neo-shadow-lg p-3 rotate-[6deg] hover:rotate-0 transition-transform duration-300 flex flex-col items-center">
+      <div className="landing-illustration-bot absolute -right-4 bottom-14 flex w-[130px] rotate-[6deg] flex-col items-center rounded-[24px] bg-pastel-yellow p-3 neo-border neo-shadow-lg">
         {/* Robot head */}
         <div className="w-14 h-12 bg-white neo-border rounded-xl flex items-center justify-center space-x-1.5 relative">
           {/* Antenna */}
           <div className="absolute -top-3 w-1 h-3 bg-[#111111] flex items-center justify-center">
             <div className="absolute -top-1 w-2.5 h-2.5 rounded-full bg-pastel-peach neo-border-thin" />
           </div>
-          <div className="w-2.5 h-2.5 rounded-full bg-[#111111] animate-pulse" />
-          <div className="w-2.5 h-2.5 rounded-full bg-[#111111] animate-pulse" />
+          <div className="landing-robot-eye h-2.5 w-2.5 rounded-full bg-[#111111]" />
+          <div className="landing-robot-eye h-2.5 w-2.5 rounded-full bg-[#111111]" />
         </div>
         {/* Speech bubble */}
         <div className="mt-2 text-[10px] font-heading text-center text-brand-text bg-white border-2 border-brand-border px-1.5 py-0.5 rounded-md leading-tight">
@@ -75,10 +75,10 @@ export const HeroIllustration: React.FC = () => {
       </div>
 
       {/* Floating Sparkles and Icons around hero */}
-      <div className="absolute top-2 right-12 animate-bounce">
+      <div className="landing-art-sparkle absolute right-12 top-2" aria-hidden="true">
         <Sparkle />
       </div>
-      <div className="absolute bottom-4 left-16 animate-pulse">
+      <div className="landing-art-shield-mark absolute bottom-4 left-16" aria-hidden="true">
         <svg viewBox="0 0 24 24" className="w-8 h-8 fill-pastel-peach stroke-[#111111] stroke-[2.5]">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
         </svg>

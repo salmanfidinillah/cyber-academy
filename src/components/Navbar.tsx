@@ -17,6 +17,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onLogout
 }) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const isLandingPage = currentRoute === "/";
 
   const navItems = [
     { label: "Beranda", id: "home" },
@@ -42,12 +43,15 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <nav className="sticky top-0 z-50 bg-[#FFFDF8] border-b-4 border-brand-border py-3 sm:py-4 px-4 sm:px-6">
+    <nav
+      className={`sticky top-0 z-50 border-b-4 border-brand-border bg-[#FFFDF8] px-4 py-3 sm:px-6 sm:py-4 ${isLandingPage ? "landing-navbar" : ""}`}
+      aria-label="Navigasi utama"
+    >
       <div className="mx-auto flex min-w-0 max-w-7xl items-center justify-between gap-3">
         {/* Logo / Branding */}
         <div
           onClick={() => handleNavClick("home")}
-          className="flex min-w-0 items-center gap-2.5 cursor-pointer select-none bg-pastel-mint px-3 py-1.5 rounded-xl neo-border neo-shadow-sm hover:translate-y-[-2px] hover:neo-shadow-md transition-all duration-150 sm:px-3.5"
+          className={`flex min-w-0 items-center gap-2.5 cursor-pointer select-none bg-pastel-mint px-3 py-1.5 rounded-xl neo-border neo-shadow-sm hover:translate-y-[-2px] hover:neo-shadow-md transition-all duration-150 sm:px-3.5 ${isLandingPage ? "landing-navbar-brand" : ""}`}
         >
           <div className="w-7 h-7 bg-white rounded-full border-2 border-brand-border flex items-center justify-center">
             <Shield className="w-4 h-4 text-brand-text fill-pastel-mint" />
@@ -135,7 +139,9 @@ export const Navbar: React.FC<NavbarProps> = ({
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2 bg-[#FFFDF8] neo-border rounded-lg neo-shadow-sm text-brand-text active:translate-y-[2px] active:neo-shadow-none transition-all duration-100"
-            aria-label="Toggle Menu"
+            aria-label={isMobileMenuOpen ? "Tutup menu navigasi" : "Buka menu navigasi"}
+            aria-expanded={isMobileMenuOpen}
+            aria-controls="mobile-navigation-menu"
           >
             {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
           </button>
@@ -144,7 +150,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 
       {/* Mobile Drawer Overlay */}
       {isMobileMenuOpen && (
-        <div className="absolute left-0 right-0 top-[100%] max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-b-4 border-brand-border bg-[#FFFDF8] p-4 animate-in fade-in slide-in-from-top-4 duration-200 md:hidden sm:p-5">
+        <div id="mobile-navigation-menu" className="absolute left-0 right-0 top-[100%] max-h-[calc(100dvh-4rem)] overflow-y-auto overscroll-contain border-b-4 border-brand-border bg-[#FFFDF8] p-4 animate-in fade-in slide-in-from-top-4 duration-200 md:hidden sm:p-5">
           <div className="flex flex-col space-y-4">
             {/* Links list */}
             <div className="flex flex-col space-y-2 border-b-2 border-brand-border pb-4">
