@@ -184,16 +184,14 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             transition={{ duration: shouldReduceMotion ? 0 : 0.62, delay: shouldReduceMotion ? 0 : 0.18, ease: [0.16, 1, 0.3, 1] }}
           >
             <div className="landing-hero-illustration-shell w-full">
+              <span
+                className="pointer-events-none absolute left-1/2 top-0.5 z-20 flex -translate-x-1/2 items-center gap-1.5 whitespace-nowrap bg-[var(--landing-blue-soft)] px-1 text-[10px] font-bold tracking-[0.06em] sm:top-5 sm:bg-transparent sm:px-0 sm:text-xs"
+                aria-hidden="true"
+              >
+                <Shield className="size-4" /> Belajar • Praktik • Aman
+              </span>
               <HeroIllustration />
             </div>
-            <motion.div
-              className="landing-floating-note absolute bottom-4 left-0 hidden items-center gap-2 rounded-xl border-2 border-brand-border bg-white px-3 py-2 text-xs font-bold shadow-[4px_4px_0_#111111] sm:flex"
-              aria-hidden="true"
-              animate={shouldReduceMotion ? undefined : { y: [0, -5, 0] }}
-              transition={{ duration: 4.8, repeat: Infinity, ease: "easeInOut" }}
-            >
-              <Shield className="size-4" /> Belajar • Praktik • Aman
-            </motion.div>
           </motion.div>
         </div>
       </section>
