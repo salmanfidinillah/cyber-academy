@@ -22,6 +22,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
   attemptId
 }) => {
   const [matchedCourse, setMatchedCourse] = useState<Course | null>(null);
+  const [passingScore, setPassingScore] = useState<number | null>(null);
   const [attempt, setAttempt] = useState<QuizAttempt | null>(null);
   const [allAttempts, setAllAttempts] = useState<QuizAttempt[]>([]);
   const [summary, setSummary] = useState<QuizSummary | null>(null);
@@ -57,6 +58,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
 
       const quiz = await fetchQuizForCourse(course.id);
       if (!quiz) throw new Error("Kuis tidak ditemukan.");
+      setPassingScore(quiz.passingScore);
 
       const [att, lessonsList, sumRes, attemptsList] = await Promise.all([
         fetchQuizAttempt(attemptId),
@@ -173,7 +175,7 @@ export const QuizResult: React.FC<QuizResultProps> = ({
         {resultStatus === "almost_passed" && (
           <div className="max-w-md mx-auto space-y-4">
             <p className="text-xs sm:text-sm text-brand-muted font-semibold leading-relaxed">
-              Skor kamu <strong className="text-brand-text">{score}%</strong>. Sedikit lagi kamu lulus! Nilai kelulusan minimal adalah <strong className="text-brand-text">70%</strong>. Yuk ulas jawabanmu di bawah ini dan coba lagi seketika!
+              Skor kamu <strong className="text-brand-text">{score}%</strong>. Sedikit lagi kamu lulus! Nilai kelulusan minimal adalah <strong className="text-brand-text">{passingScore}%</strong>. Yuk ulas jawabanmu di bawah ini dan coba lagi seketika!
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
               <NeoButton variant="secondary" onClick={() => onNavigate(`/learn/courses/${courseSlug}`)} className="text-xs font-bold">

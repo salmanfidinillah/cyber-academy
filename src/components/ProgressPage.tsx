@@ -135,7 +135,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({
   };
 
   const handleResetProgress = async () => {
-    if (window.confirm("Apakah Anda yakin ingin menyetel ulang seluruh progres belajar Anda? Seluruh XP, level, dan penyelesaian materi akan dihapus.")) {
+    if (window.confirm("Setel ulang progres belajar? Penyelesaian materi, riwayat dan total XP, level, serta streak akan direset. Riwayat kuis, simulasi, lencana, sertifikat, dan AI tidak dihapus.")) {
       try {
         await resetMyLearningState("RESET_MY_PROGRESS");
         await refreshUserProfile();
