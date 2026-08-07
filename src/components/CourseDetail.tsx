@@ -22,6 +22,7 @@ export const CourseDetail: React.FC<CourseDetailProps> = ({
   const [userProgress, setUserProgress] = useState<Record<string, any>>({});
   const [courseLessons, setCourseLessons] = useState<Lesson[]>([]);
   const [currentCourse, setCurrentCourse] = useState<Course | null>(null);
+  const [quizPassingScore, setQuizPassingScore] = useState<number | null>(null);
   const [latestAttemptId, setLatestAttemptId] = useState<string | null>(null);
   const [isCourseLocked, setIsCourseLocked] = useState<boolean>(false);
 
@@ -49,6 +50,7 @@ export const CourseDetail: React.FC<CourseDetailProps> = ({
       ]);
 
       setCourseLessons(lessons);
+      setQuizPassingScore(quiz?.passingScore ?? null);
 
       if (quiz) {
         const summary = await fetchQuizSummary(quiz.id);
@@ -365,7 +367,9 @@ export const CourseDetail: React.FC<CourseDetailProps> = ({
                 </h3>
               </div>
               <p className="text-xs sm:text-sm text-brand-text/90 font-medium max-w-xl">
-                Uji pemahamanmu dengan menjawab soal kuis pilihan ganda. Dapatkan skor minimal 70 untuk lulus dan meraih sertifikat serta XP bonus!
+                Uji pemahamanmu dengan menjawab soal kuis pilihan ganda. {quizPassingScore !== null
+                  ? `Dapatkan skor minimal ${quizPassingScore}% untuk lulus dan meraih sertifikat serta XP bonus!`
+                  : "Selesaikan kuis untuk lulus dan meraih sertifikat serta XP bonus!"}
               </p>
             </div>
 

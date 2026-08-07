@@ -18,7 +18,7 @@ const fillRegistrationForm = () => {
   fireEvent.change(screen.getByPlaceholderText("nama@email.com"), {
     target: { value: "salman@example.com" },
   });
-  fireEvent.change(screen.getByPlaceholderText("Min. 6 karakter"), {
+  fireEvent.change(screen.getByPlaceholderText("Min. 8 karakter"), {
     target: { value: "Password123" },
   });
   fireEvent.change(screen.getByPlaceholderText("Ulangi sandi"), {
@@ -38,6 +38,13 @@ describe("Register verification message", () => {
   afterEach(() => {
     cleanup();
     vi.useRealTimers();
+  });
+
+  it("shows a password hint that matches the eight-character validation", () => {
+    render(<Register onNavigate={vi.fn()} />);
+
+    expect(screen.getByPlaceholderText("Min. 8 karakter")).toBeTruthy();
+    expect(screen.queryByPlaceholderText("Min. 6 karakter")).toBeNull();
   });
 
   it("shows the requested email guidance only after registration succeeds", async () => {

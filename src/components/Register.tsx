@@ -195,7 +195,7 @@ export const Register: React.FC<RegisterProps> = ({ onNavigate }) => {
                   disabled={isSubmitting || isGoogleSubmitting}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Min. 6 karakter"
+                  placeholder="Min. 8 karakter"
                   className="w-full pl-10 pr-4 py-2 bg-white border-3 border-brand-border rounded-xl font-sans font-medium text-brand-text text-sm focus:outline-none focus:ring-4 focus:ring-black/10 focus:border-brand-border disabled:opacity-50 transition-all"
                 />
               </div>
