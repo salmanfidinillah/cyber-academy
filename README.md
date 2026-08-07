@@ -23,17 +23,11 @@ Akun ini disediakan untuk mencoba alur pengguna biasa. Akun tersebut tidak dinya
 
 ![Landing page Cyber Academy AI](docs/screenshots/landing-desktop.png)
 
-### Dashboard
+### Dashboard Mobile
 
-![Dashboard Cyber Academy AI](docs/screenshots/dashboard-desktop.png)
+![Bagian atas Dashboard Cyber Academy AI di mobile](docs/screenshots/dashboard-mobile-top.jpeg)
 
-### Lesson
-
-![Halaman lesson Cyber Academy AI](docs/screenshots/lesson.png)
-
-### AI Tutor
-
-![AI Tutor Cyber Academy AI](docs/screenshots/ai-tutor.png)
+![Ringkasan progress Dashboard Cyber Academy AI di mobile](docs/screenshots/dashboard-mobile-content.jpeg)
 
 ### Tampilan Mobile
 
@@ -152,7 +146,7 @@ npm run dev
 
 Server development berjalan pada port `3000` secara default dan dapat diubah melalui `PORT`.
 
-Konfigurasi Firebase client dibaca dari environment variable `VITE_FIREBASE_*` dengan fallback ke `firebase-applet-config.json`. Konfigurasi AI backend memakai nama variable berikut tanpa menyimpan secret di repository:
+Konfigurasi Firebase client dibaca dari environment variable `VITE_FIREBASE_*` dengan fallback ke `firebase-applet-config.json`. Salin [`.env.example`](.env.example) menjadi `.env` untuk konfigurasi lokal, lalu isi hanya nilai yang diperlukan. File `.env` tidak boleh dimasukkan ke repository.
 
 ```env
 VITE_FIREBASE_API_KEY=...
@@ -162,12 +156,16 @@ VITE_FIREBASE_STORAGE_BUCKET=...
 VITE_FIREBASE_MESSAGING_SENDER_ID=...
 VITE_FIREBASE_APP_ID=...
 VITE_FIREBASE_MEASUREMENT_ID=...
+VITE_FIREBASE_FIRESTORE_DATABASE_ID=(default)
 
 AI_PROVIDER=vertex
 GOOGLE_CLOUD_PROJECT=...
 GOOGLE_CLOUD_LOCATION=...
 GEMINI_MODEL=...
+PORT=3000
 ```
+
+Backend Firebase dan Vertex AI memakai Application Default Credentials. Credential server tidak disimpan di `.env.example` maupun repository.
 
 Script pemeriksaan yang tersedia:
 

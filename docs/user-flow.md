@@ -200,7 +200,7 @@ Pengunjung dapat menekan tombol fitur tersebut, tetapi route tujuan tetap dilind
 
 Jika pembuatan profil Firestore gagal, service mencoba menghapus akun Auth yang baru dibuat agar tidak meninggalkan akun tanpa profil. Jika profil sudah berhasil dibuat tetapi email verifikasi gagal dikirim, akun tetap ada dan UI menampilkan error. Pengguna dapat memakai fitur kirim ulang di halaman verifikasi.
 
-Placeholder password pada form menulis “Min. 6 karakter”, tetapi validasi yang benar di handler adalah minimal 8 karakter dengan kombinasi huruf besar, huruf kecil, dan angka.
+Placeholder password menulis “Min. 8 karakter” dan sesuai dengan validasi minimal 8 karakter yang memerlukan huruf besar, huruf kecil, dan angka.
 
 ### 8.2 Login email dan password
 
@@ -398,7 +398,7 @@ Halaman hasil hanya dapat mengambil attempt milik pengguna login. Jika attempt t
 
 Hasil lulus menuju daftar jalur. Hasil hampir lulus dapat kembali ke materi, membuka AI Tutor remedial, atau mengulang quiz. Hasil remedial menampilkan lesson rekomendasi dari pertanyaan yang salah, AI Tutor, dan tombol ulang quiz. Riwayat attempt dan pembahasan juga tersedia.
 
-Teks UI di Detail Course dan hasil hampir lulus menyebut 70 sebagai nilai minimal. Server tetap memakai `passingScore` quiz. Pada katalog source saat ini, jalur Beginner memakai 70, Intermediate 75, dan Advanced 80.
+Detail Course dan hasil hampir lulus membaca `passingScore` quiz yang sedang dibuka. Pada katalog source saat ini, jalur Beginner memakai 70, Intermediate 75, dan Advanced 80.
 
 Jika load atau submit quiz gagal, halaman error menampilkan tombol **Kembali** dan **Coba Lagi**, tetapi kedua tombol hanya menghapus pesan error. Keduanya tidak menjalankan ulang fungsi load atau submit secara langsung.
 
@@ -450,7 +450,7 @@ Tombol reset memakai konfirmasi browser, lalu mengirim string `RESET_MY_PROGRESS
 - mengatur XP 0, Level 1, streak 0, dan tanggal belajar menjadi null;
 - menolak reset bila total write lebih dari 450 dokumen.
 
-Reset tidak menghapus `quizAttempts`, `quizSummaries`, `simulationAttempts`, `userBadges`, `certificates`, percakapan AI, atau cache AI Insight di `localStorage`. Akibatnya, label UI “seluruh progres” lebih luas daripada data yang benar-benar dihapus server.
+Reset tidak menghapus `quizAttempts`, `quizSummaries`, `simulationAttempts`, `userBadges`, `certificates`, percakapan AI, atau cache AI Insight di `localStorage`. Dialog konfirmasi UI menyebut cakupan yang direset dan data yang tetap dipertahankan.
 
 ## 15. Badge
 
@@ -666,7 +666,7 @@ Storage hanya mengizinkan pemilik UID mengunggah avatar kurang dari 2 MB dengan 
 
 ## 25. Bukti Perilaku dari Test
 
-Seluruh test project dijalankan setelah audit: 36 file test dan 338 test lulus.
+Seluruh test project dijalankan setelah audit: 36 file test dan 339 test lulus.
 
 Test yang paling berhubungan dengan user flow memeriksa:
 
@@ -718,4 +718,4 @@ Catatan ini bukan fitur tambahan, tetapi perbedaan atau batas yang memang ada pa
 | Profil dan pengaturan | Diperiksa untuk tampilan, edit profil/avatar, perubahan email/password, provider Google, loading, dan error. |
 | Admin | Diperiksa dari route, guard, sidebar, komponen, endpoint, custom claim, dan audit log. |
 | API, Firestore, Firebase Auth, Storage | Diperiksa dari semua router Express, service server/client, rules, dan server mount. |
-| Loading, empty, error, test | Diperiksa per halaman dan dikonfirmasi dengan 338 test yang lulus. |
+| Loading, empty, error, test | Diperiksa per halaman dan dikonfirmasi dengan 339 test yang lulus. |
