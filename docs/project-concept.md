@@ -221,7 +221,7 @@ Halaman Progress menyatukan progress jalur, course, lesson, transaksi XP, quiz, 
 
 Level terdiri dari level 1 sampai 5 dengan ambang XP yang ditentukan backend. Streak bertambah ketika pengguna memperoleh reward belajar pada hari berikutnya dan kembali ke 1 jika jeda lebih dari satu hari. Perhitungan tanggal memakai zona waktu Asia/Jakarta.
 
-Pengguna juga dapat mereset seluruh progress dari pengaturan dengan konfirmasi khusus. Reset menghapus progress dan transaksi XP pengguna, lalu mengembalikan XP, level, dan streak ke nilai awal.
+Pengguna juga dapat menyetel ulang progress belajar dari halaman Progress. Reset menghapus penyelesaian materi dan transaksi XP, lalu mengembalikan XP, level, dan streak ke nilai awal. Riwayat kuis, simulasi, badge, sertifikat, dan AI tetap dipertahankan serta dijelaskan pada dialog konfirmasi.
 
 ### 10.12 Badge
 
@@ -379,7 +379,7 @@ Hasil verifikasi pada source tersebut:
 - TypeScript check berhasil tanpa error.
 - Build production frontend dan server berhasil.
 - 36 file test berhasil dijalankan.
-- 338 test lulus.
+- 339 test lulus.
 - Tidak ada seed, migrasi, atau deployment yang dijalankan selama audit.
 
 ## 18. Penutup

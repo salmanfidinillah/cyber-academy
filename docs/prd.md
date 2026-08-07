@@ -227,9 +227,7 @@ Halaman lesson memiliki pembaca materi, drawer daftar materi, panel AI kontekstu
 
 Terdapat 25 quiz dengan total 160 soal. Nilai kelulusan sesuai tingkat adalah 70, 75, atau 80. Endpoint soal publik tidak mengirim jawaban benar dan penjelasan sebelum jawaban dikumpulkan. Saat submit, server memeriksa autentikasi, kelengkapan lesson, ID soal, pilihan jawaban, skor, dan kelulusan.
 
-Hasil quiz menampilkan skor, status remedial/hampir lulus/lulus, review jawaban, penjelasan, lesson yang disarankan, riwayat percobaan, dan nilai terbaik. Draft jawaban disimpan di `localStorage` per pengguna dan course. XP kelulusan hanya diberikan pada kelulusan pertama.
-
-Batasan yang ditemukan adalah teks pada tampilan “hampir lulus” masih menyebut nilai minimum 70%, padahal beberapa quiz membutuhkan 75% atau 80%. Nilai kelulusan server tetap mengikuti konfigurasi quiz.
+Hasil quiz menampilkan skor, status remedial/hampir lulus/lulus, review jawaban, penjelasan, lesson yang disarankan, riwayat percobaan, dan nilai terbaik. Draft jawaban disimpan di `localStorage` per pengguna dan course. XP kelulusan hanya diberikan pada kelulusan pertama. Detail course dan hasil hampir lulus menampilkan nilai kelulusan dari `passingScore` quiz, sehingga angka di UI mengikuti konfigurasi 70, 75, atau 80.
 
 ### 10.7 Simulasi
 
@@ -253,7 +251,7 @@ Ada beberapa batasan. Jumlah lesson pada perhitungan insight ditulis tetap sebag
 
 Progress dan XP dihitung melalui transaksi server. ID transaksi dibuat tetap per aktivitas agar penyelesaian ulang tidak memberi hadiah ganda. Level memiliki lima tahap dengan batas 100, 250, 450, dan 700 XP. Streak bertambah pada aktivitas belajar pertama yang menghasilkan reward dalam satu tanggal zona waktu Jakarta; aktivitas pada hari yang sama tidak menambah streak dan jeda hari akan mengulang dari satu.
 
-Halaman Progress menampilkan ringkasan aktivitas dan jalur. Fitur reset meminta teks `RESET_MY_PROGRESS`. Implementasinya menghapus `userProgress` dan `xpTransactions`, lalu mengatur ulang total XP, level, dan streak. Reset tidak menghapus percobaan quiz, ringkasan quiz, percobaan simulasi, badge, sertifikat, atau riwayat AI. Karena UI menyebut reset seluruh progress, batas cakupan ini dapat menimbulkan data pencapaian lama yang masih terlihat.
+Halaman Progress menampilkan ringkasan aktivitas dan jalur. Fitur reset meminta teks `RESET_MY_PROGRESS`. Implementasinya menghapus `userProgress` dan `xpTransactions`, lalu mengatur ulang total XP, level, dan streak. Reset tidak menghapus percobaan quiz, ringkasan quiz, percobaan simulasi, badge, sertifikat, atau riwayat AI. Dialog konfirmasi UI menjelaskan kedua bagian tersebut sebelum pengguna melanjutkan.
 
 ### 10.11 Badge
 
@@ -303,7 +301,7 @@ Sebagian route variasi seperti `/new`, `/:id`, dan `/:id/edit` diarahkan ke komp
 | FR-AI-02 | Pengguna dapat membuat, membuka, dan menghapus percakapan AI | Sedang | Sudah tersedia |
 | FR-AI-03 | Sistem dapat membuat AI Insight dari data belajar pengguna | Sedang | Tersedia dengan batasan |
 | FR-PROGRESS-01 | Sistem mencatat progress, XP, level, dan streak di server | Tinggi | Sudah tersedia |
-| FR-PROGRESS-02 | Pengguna dapat mereset seluruh data belajar yang terkait | Sedang | Tersedia dengan batasan |
+| FR-PROGRESS-02 | Pengguna dapat mereset progress belajar dan XP sesuai cakupan endpoint | Sedang | Sudah tersedia |
 | FR-BADGE-01 | Sistem dapat mengevaluasi dan memberi empat badge aktif | Sedang | Sudah tersedia |
 | FR-CERT-01 | Pengguna yang memenuhi syarat dapat menerbitkan satu sertifikat per jalur | Sedang | Sudah tersedia |
 | FR-CERT-02 | Sertifikat dapat diverifikasi secara publik dan diunduh sebagai PDF | Sedang | Sudah tersedia |
@@ -349,7 +347,7 @@ Beberapa fetch sekunder hanya menulis error ke console sehingga pengguna bisa me
 
 ### 12.6 Maintainability
 
-Project memakai TypeScript dan memisahkan route backend, service, halaman, komponen, context, serta data katalog. Validasi schema memakai Zod. Pada audit ini, typecheck, build production, dan 338 test dalam 36 file berhasil dijalankan.
+Project memakai TypeScript dan memisahkan route backend, service, halaman, komponen, context, serta data katalog. Validasi schema memakai Zod. Pada audit final, typecheck, build production, dan 339 test dalam 36 file berhasil dijalankan.
 
 Bagian yang perlu perhatian adalah beberapa komponen besar, penggunaan tipe `any` pada sebagian area admin dan service, serta keberadaan helper progress berbasis `localStorage` lama yang berdampingan dengan sistem progress backend. Kondisi ini dapat membingungkan saat ada perubahan berikutnya jika sumber data tidak dijaga dengan jelas.
 
@@ -551,13 +549,12 @@ Provider AI bawaan adalah Vertex AI dengan lokasi bawaan `global` dan model bawa
 1. AI Insight masih memakai angka tetap 12 lesson, bukan total katalog 79 lesson, dan perhitungan simulasi memakai jumlah attempt.
 2. Reset progress hanya membersihkan progress serta transaksi XP; attempt, badge, sertifikat, dan riwayat AI tetap ada.
 3. Landing page menyebut badge lama dan leaderboard mingguan yang tidak ada pada sistem runtime. Demo chat di landing juga bukan AI aktif.
-4. Teks “hampir lulus” pada hasil quiz menyebut 70%, walau sebagian quiz mempunyai batas 75% atau 80%.
-5. Sebagian route admin detail/edit/new belum membuka item sesuai parameter URL; banyak operasi tetap dilakukan melalui modal pada halaman daftar.
-6. UI admin simulasi hanya mengubah status, UI badge hanya baca, dan tidak ada editor skenario simulasi.
-7. Rate limit AI berada di memori satu proses server, sehingga tidak menjadi quota global jika aplikasi memakai beberapa instance.
-8. Beberapa kegagalan fetch sekunder hanya dicatat ke console dan dapat membuat halaman tampil dengan data sebagian.
-9. Halaman HTML masih memakai bahasa dokumen Inggris meskipun isi aplikasi berbahasa Indonesia.
-10. Penghapusan akun mandiri, leaderboard, notifikasi, dan aplikasi mobile native tidak tersedia.
+4. Sebagian route admin detail/edit/new belum membuka item sesuai parameter URL; banyak operasi tetap dilakukan melalui modal pada halaman daftar.
+5. UI admin simulasi hanya mengubah status, UI badge hanya baca, dan tidak ada editor skenario simulasi.
+6. Rate limit AI berada di memori satu proses server, sehingga tidak menjadi quota global jika aplikasi memakai beberapa instance.
+7. Beberapa kegagalan fetch sekunder hanya dicatat ke console dan dapat membuat halaman tampil dengan data sebagian.
+8. Halaman HTML masih memakai bahasa dokumen Inggris meskipun isi aplikasi berbahasa Indonesia.
+9. Penghapusan akun mandiri, leaderboard, notifikasi, dan aplikasi mobile native tidak tersedia.
 
 Temuan di atas adalah kondisi implementasi saat ZIP diaudit. PRD ini tidak menganggap teks promosi, route alias, atau konfigurasi yang belum aktif sebagai fitur yang sudah selesai.
 
@@ -566,7 +563,7 @@ Temuan di atas adalah kondisi implementasi saat ZIP diaudit. PRD ini tidak menga
 Audit mencakup route frontend, route backend, komponen halaman, service, data katalog, Firebase Rules, Storage Rules, autentikasi, proteksi role, progress dan XP, quiz, simulasi, badge, sertifikat, AI, halaman admin, serta keadaan loading/error/empty. Pemeriksaan teknis pada source menghasilkan:
 
 - TypeScript typecheck: berhasil;
-- 36 file test dengan total 338 test: seluruhnya berhasil;
+- 36 file test dengan total 339 test: seluruhnya berhasil;
 - build production client dan server: berhasil.
 
 Hasil tersebut menunjukkan source dapat melewati pemeriksaan otomatis yang tersedia. Hasil ini bukan pengganti pengujian deployment, konfigurasi layanan cloud, perangkat fisik, keamanan eksternal, atau accessibility formal karena hal-hal tersebut tidak dijalankan dalam audit ini.
