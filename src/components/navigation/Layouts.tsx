@@ -39,7 +39,10 @@ export const PublicLayout: React.FC = () => {
           </div>
         )}
       </main>
-      <Footer onNavigate={(route) => navigate(route)} />
+      <Footer
+        onNavigate={(route) => navigate(route)}
+        isLandingPage={location.pathname === "/"}
+      />
     </div>
   );
 };

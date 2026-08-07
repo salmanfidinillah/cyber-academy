@@ -1,6 +1,5 @@
 import { lazy, Suspense, useEffect } from "react";
 import { Routes, Route, Navigate, useNavigate, useParams, useLocation } from "react-router-dom";
-import { LandingPage } from "./components/LandingPage";
 import { Login } from "./components/Login";
 import { Register } from "./components/Register";
 import { ForgotPassword } from "./components/ForgotPassword";
@@ -52,6 +51,12 @@ const LessonDetail = lazy(() =>
   })),
 );
 
+const LandingPage = lazy(() =>
+  import("./components/LandingPage").then((module) => ({
+    default: module.LandingPage,
+  })),
+);
+
 export default function App() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -67,7 +72,11 @@ export default function App() {
   };
 
   // Wrapper components with props mapping
-  const LandingPageRoute = () => <LandingPage onNavigate={handleNavigate} />;
+  const LandingPageRoute = () => (
+    <Suspense fallback={<LoadingBoundary message="Menyiapkan Cyber Academy..." />}>
+      <LandingPage onNavigate={handleNavigate} />
+    </Suspense>
+  );
   
   const LoginRoute = () => {
     return (
