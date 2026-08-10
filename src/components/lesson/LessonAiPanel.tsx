@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { Bot, ExternalLink, Send, Sparkles } from "lucide-react";
+import { AiTutorMarkdown } from "../AiTutorMarkdown";
 import { LessonDrawer } from "./LessonDrawer";
 
 type AiAnswer = {
@@ -89,7 +90,11 @@ export const LessonAiPanel: React.FC<LessonAiPanelProps> = ({
                     isUser ? "bg-pastel-blue" : "bg-white"
                   }`}
                 >
-                  <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{answer.text}</p>
+                  {isUser ? (
+                    <p className="whitespace-pre-wrap break-words [overflow-wrap:anywhere]">{answer.text}</p>
+                  ) : (
+                    <AiTutorMarkdown text={answer.text} />
+                  )}
                 </div>
               </div>
             );

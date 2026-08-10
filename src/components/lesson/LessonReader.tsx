@@ -150,6 +150,8 @@ interface LessonReaderProps {
   completeError: string | null;
   previousLesson: Lesson | null;
   nextLesson: Lesson | null;
+  completionActionRef: React.RefObject<HTMLElement | null>;
+  centerCompletionAction: boolean;
   onNavigate: (route: string) => void;
   onComplete: () => void;
 }
@@ -165,6 +167,8 @@ export const LessonReader: React.FC<LessonReaderProps> = ({
   completeError,
   previousLesson,
   nextLesson,
+  completionActionRef,
+  centerCompletionAction,
   onNavigate,
   onComplete,
 }) => {
@@ -174,7 +178,7 @@ export const LessonReader: React.FC<LessonReaderProps> = ({
     `/learn/courses/${course.slug}/lessons/${target.slug}`;
 
   return (
-    <div className="mx-auto w-full max-w-[52rem] space-y-6">
+    <div className={`mx-auto w-full max-w-[52rem] space-y-6 ${centerCompletionAction ? "pb-[50vh]" : ""}`}>
       <div className="overflow-hidden rounded-[20px] border-[3px] border-black bg-pastel-yellow shadow-[5px_5px_0_0_#111111]">
         <header className="space-y-4 p-5 sm:p-7">
           <div className="flex flex-wrap items-center justify-between gap-3">
@@ -289,6 +293,7 @@ export const LessonReader: React.FC<LessonReaderProps> = ({
       </article>
 
       <nav
+        ref={completionActionRef}
         className="rounded-[20px] border-[3px] border-black bg-white p-4 shadow-[4px_4px_0_0_#111111] sm:p-5"
         aria-label="Navigasi materi"
       >

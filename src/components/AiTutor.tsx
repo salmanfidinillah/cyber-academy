@@ -15,6 +15,7 @@ import {
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
 import { NeoBadge } from "./NeoBadge";
+import { AiTutorMarkdown } from "./AiTutorMarkdown";
 import {
   getAiConversations,
   createAiConversation,
@@ -272,8 +273,8 @@ export const AiTutor: React.FC<AiTutorProps> = ({
           )}
 
           {/* Core explanation */}
-          <div className="text-sm font-sans text-brand-text whitespace-pre-line break-words leading-relaxed [overflow-wrap:anywhere]">
-            {parsed.answer}
+          <div className="text-sm font-sans text-brand-text break-words leading-relaxed [overflow-wrap:anywhere]">
+            <AiTutorMarkdown text={parsed.answer} />
           </div>
 
           {/* Quick Summary Block */}
@@ -333,8 +334,8 @@ export const AiTutor: React.FC<AiTutorProps> = ({
     } catch {
       // Fallback if not JSON stringified
       return (
-        <div className="text-sm font-sans text-brand-text whitespace-pre-line break-words">
-          {msg.content}
+        <div className="text-sm font-sans text-brand-text break-words">
+          <AiTutorMarkdown text={msg.content} />
         </div>
       );
     }

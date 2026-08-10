@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { BookOpen, ChevronRight, RefreshCw, Sparkles } from "lucide-react";
 import { NeoCard } from "./NeoCard";
 import { NeoButton } from "./NeoButton";
@@ -41,6 +42,8 @@ export const LessonDetail: React.FC<LessonDetailProps> = ({
 
   const [isCompleting, setIsCompleting] = useState(false);
   const completionInFlightRef = useRef(false);
+  const completionScrollPendingRef = useRef(false);
+  const completionActionRef = useRef<HTMLElement>(null);
   const [showCelebration, setShowCelebration] = useState(false);
   const [gainedXp, setGainedXp] = useState(0);
   const [didLevelUp, setDidLevelUp] = useState(false);
@@ -117,6 +120,19 @@ export const LessonDetail: React.FC<LessonDetailProps> = ({
     closeAiPanel();
   }, [lessonSlug, courseSlug, closeMaterialDrawer, closeAiPanel]);
 
+  useEffect(() => {
+    if (!showCelebration || !completionScrollPendingRef.current || !currentLesson) return;
+    const completedLesson =
+      userProgress[`${currentUser.uid}_lesson_${currentLesson.id}`]?.status === "completed";
+    if (!completedLesson) return;
+
+    const completionAction = completionActionRef.current;
+    if (!completionAction || typeof completionAction.scrollIntoView !== "function") return;
+
+    completionScrollPendingRef.current = false;
+    completionAction.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [currentLesson, currentUser.uid, showCelebration, userProgress]);
+
   if (isLoadingData) {
     return (
       <div className="mx-auto max-w-4xl space-y-4 px-4 py-12 text-center sm:py-16" role="status">
@@ -183,6 +199,7 @@ export const LessonDetail: React.FC<LessonDetailProps> = ({
       const completionFlags = deriveLessonCompletionFlags(result.courseProgress);
       setDidCourseComplete(completionFlags.didCourseComplete);
       setDidFinishAllLessons(completionFlags.didFinishAllLessons);
+      completionScrollPendingRef.current = true;
       setShowCelebration(true);
     } catch (error: any) {
       setCompleteError(error.message || "Gagal menyimpan progres belajar.");
@@ -318,6 +335,8 @@ export const LessonDetail: React.FC<LessonDetailProps> = ({
         completeError={completeError}
         previousLesson={prevLesson}
         nextLesson={nextLesson}
+        completionActionRef={completionActionRef}
+        centerCompletionAction={showCelebration}
         onNavigate={onNavigate}
         onComplete={handleComplete}
       />
@@ -345,7 +364,7 @@ export const LessonDetail: React.FC<LessonDetailProps> = ({
         onOpenFullScreen={handleOpenFullScreenAi}
       />
 
-      {showCelebration && (
+      {showCelebration && createPortal(
         <div
           className="fixed inset-0 z-[80] flex items-center justify-center overflow-y-auto bg-[#111111]/45 p-3 animate-in fade-in duration-200 sm:p-4"
           role="dialog"
@@ -420,7 +439,8 @@ export const LessonDetail: React.FC<LessonDetailProps> = ({
               <ChevronRight className="size-4" aria-hidden="true" />
             </NeoButton>
           </NeoCard>
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   );
