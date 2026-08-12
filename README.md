@@ -9,11 +9,16 @@ Project ini dikembangkan untuk FTI Festival 2026 kategori Web Development.
 Website production: [https://siberaga.web.id](https://siberaga.web.id)
 
 ### Akun Demo Juri
-
+pengguna baru
 | | |
 | --- | --- |
 | Email | `juri@siberaga.web.id` |
-| Password | `Juri123@` |
+| Password | `Demojuri321` |
+pengguna tamat
+| | |
+| --- | --- |
+| Email | `support@siberaga.web.id` |
+| Password | `Demojuri321` |
 
 Akun ini disediakan untuk mencoba alur pengguna biasa. Akun tersebut tidak dinyatakan sebagai akun admin.
 
