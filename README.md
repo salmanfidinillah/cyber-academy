@@ -32,6 +32,12 @@ Akun ini disediakan untuk mencoba alur pengguna biasa. Akun tersebut tidak dinya
 
 ![Landing page Cyber Academy AI](docs/screenshots/landing-desktop.png)
 
+
+### Dashboard desktop
+
+![Landing page Cyber Academy AI](docs/screenshots/dashboard-desktop.png)
+
+
 ### Dashboard Mobile
 
 ![Bagian atas Dashboard Cyber Academy AI di mobile](docs/screenshots/dashboard-mobile-top.jpeg)
