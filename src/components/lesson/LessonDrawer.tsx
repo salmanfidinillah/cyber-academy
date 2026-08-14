@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 
 interface LessonDrawerProps {
@@ -90,7 +91,7 @@ export const LessonDrawer: React.FC<LessonDrawerProps> = ({
           mobileFullscreen ? "w-full sm:w-[min(92vw,27.5rem)]" : "w-[min(92vw,27.5rem)]"
         } border-l-4 shadow-[-8px_0_0_0_#111111]`;
 
-  return (
+  return createPortal(
     <div className="fixed inset-0 z-[70]" data-testid={`${id}-overlay-root`}>
       <div
         className="lesson-drawer-overlay absolute inset-0 bg-black/55"
@@ -128,8 +129,9 @@ export const LessonDrawer: React.FC<LessonDrawerProps> = ({
             <X className="size-5" aria-hidden="true" />
           </button>
         </header>
-        <div className="min-h-0 flex-1">{children}</div>
+        <div className="flex min-h-0 flex-1 flex-col overflow-hidden">{children}</div>
       </aside>
-    </div>
+    </div>,
+    document.body,
   );
 };
