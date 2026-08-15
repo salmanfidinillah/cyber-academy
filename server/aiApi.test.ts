@@ -1,6 +1,6 @@
 import express from "express";
 import request from "supertest";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { setTokenVerifierForTesting } from "./middleware/auth";
 import { AiConfigState } from "./config/aiConfig";
 import {
@@ -8,15 +8,29 @@ import {
   UserAiQuota,
   createAiRouter,
 } from "./routes/aiRoutes";
-import { AiProvider } from "./services/aiProvider";
+import { AiGenerationResult, AiProvider } from "./services/aiProvider";
 
+const tutorAnswer = "Gunakan passphrase unik dan aktifkan MFA.";
 const tutorResult = {
-  answer: "Gunakan passphrase unik dan aktifkan MFA.",
-  summary: "Perkuat keamanan akun.",
-  suggestedQuestions: ["Bagaimana memilih passphrase?"],
+  answer: tutorAnswer,
+  summary: "",
+  suggestedQuestions: [],
   safetyStatus: "safe",
   requiresOfficialHelp: false,
 };
+
+function tutorGeneration(
+  text: string,
+  overrides: Partial<AiGenerationResult> = {}
+): AiGenerationResult {
+  return {
+    text,
+    finishReason: "STOP",
+    candidateCount: 1,
+    model: "gemini-2.5-flash",
+    ...overrides,
+  };
+}
 
 const insightResult = {
   summary: "Kemajuan belajar stabil.",
@@ -82,6 +96,10 @@ describe("Vertex AI API contract", () => {
     });
   });
 
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
   it("returns 401 without a Firebase token", async () => {
     const provider = { generateContent: vi.fn() };
     const response = await request(createApp(provider)).post("/api/ai/tutor").send({ message: "Apa itu MFA?" });
@@ -109,28 +127,99 @@ describe("Vertex AI API contract", () => {
     expect(provider.generateContent).not.toHaveBeenCalled();
   });
 
-  it("returns a validated Tutor response with the existing frontend shape", async () => {
-    const provider = { generateContent: vi.fn().mockResolvedValue(JSON.stringify(tutorResult)) };
+  it("wraps a plain-text Tutor answer in the existing frontend shape without requesting JSON", async () => {
+    const provider = { generateContent: vi.fn().mockResolvedValue(tutorAnswer) };
     const response = await request(createApp(provider))
       .post("/api/ai/tutor")
       .set(authHeader)
       .send({ message: "Bagaimana mengamankan akun?", contextType: "general" });
     expect(response.status).toBe(200);
     expect(response.body).toEqual(tutorResult);
+    const providerRequest = (provider.generateContent as any).mock.calls[0][0];
+    expect(providerRequest.responseSchema).toBeUndefined();
+    expect(providerRequest.contents).toContain("Jawab langsung sebagai teks Bahasa Indonesia");
+    expect(providerRequest.contents).not.toContain("Kembalikan hanya JSON");
+    expect(providerRequest.systemInstruction).toContain("ajukan tepat satu pertanyaan klarifikasi");
+    expect(providerRequest.systemInstruction).toContain("di luar topik keamanan siber");
+    expect(providerRequest.systemInstruction).toContain("Jangan menambahkan pertanyaan lanjutan");
   });
 
-  it("returns a structured error and does not accept invalid model JSON", async () => {
-    const provider = { generateContent: vi.fn().mockResolvedValue("not-json") };
+  it("accepts a non-JSON free-form Tutor answer without retrying", async () => {
+    const generateStructuredContent = vi.fn().mockResolvedValue(tutorGeneration("Jawaban bebas tanpa JSON."));
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
     const response = await request(createApp(provider))
       .post("/api/ai/tutor")
       .set(authHeader)
       .send({ message: "Apa itu phishing?" });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual({ ...tutorResult, answer: "Jawaban bebas tanpa JSON." });
+    expect(generateStructuredContent).toHaveBeenCalledTimes(1);
+    expect(generateStructuredContent.mock.calls[0][0].responseSchema).toBeUndefined();
+  });
+
+  it("retries empty candidates and empty text, then returns the friendly final error", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const generateStructuredContent = vi
+      .fn()
+      .mockResolvedValueOnce(tutorGeneration("", { candidateCount: 0, finishReason: undefined }))
+      .mockResolvedValueOnce(tutorGeneration("", { candidateCount: 1 }));
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
+    const response = await request(createApp(provider))
+      .post("/api/ai/tutor")
+      .set(authHeader)
+      .send({ message: "Bagaimana melindungi akun?" });
+
     expect(response.status).toBe(502);
-    expect(response.body.code).toBe("AI_INVALID_RESPONSE");
+    expect(response.body).toMatchObject({
+      code: "AI_INVALID_RESPONSE",
+      error: "Respons AI belum berhasil diproses. Silakan coba kembali.",
+    });
+    expect(generateStructuredContent).toHaveBeenCalledTimes(2);
+  });
+
+  it("detects MAX_TOKENS and recovers with exactly one Tutor retry", async () => {
+    vi.spyOn(console, "warn").mockImplementation(() => {});
+    vi.spyOn(console, "info").mockImplementation(() => {});
+    const generateStructuredContent = vi
+      .fn()
+      .mockResolvedValueOnce(
+        tutorGeneration("Jawaban terpotong", { finishReason: "MAX_TOKENS" })
+      )
+      .mockResolvedValueOnce(tutorGeneration(tutorAnswer));
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
+    const response = await request(createApp(provider))
+      .post("/api/ai/tutor")
+      .set(authHeader)
+      .send({ message: "Jelaskan keamanan akun." });
+
+    expect(response.status).toBe(200);
+    expect(response.body).toEqual(tutorResult);
+    expect(generateStructuredContent).toHaveBeenCalledTimes(2);
+  });
+
+  it("keeps provider safety blocking distinct and does not retry it", async () => {
+    const generateStructuredContent = vi.fn().mockResolvedValue(
+      tutorGeneration("", {
+        finishReason: "SAFETY",
+        blockReason: "SAFETY",
+        candidateCount: 0,
+      })
+    );
+    const provider = { generateContent: vi.fn(), generateStructuredContent };
+    const response = await request(createApp(provider))
+      .post("/api/ai/tutor")
+      .set(authHeader)
+      .send({ message: "Pertanyaan yang diblokir provider." });
+
+    expect(response.status).toBe(422);
+    expect(response.body.code).toBe("AI_TUTOR_SAFETY_REJECTED");
+    expect(generateStructuredContent).toHaveBeenCalledTimes(1);
   });
 
   it("limits Firestore history before sending it to the provider", async () => {
-    const provider = { generateContent: vi.fn().mockResolvedValue(JSON.stringify(tutorResult)) };
+    const provider = { generateContent: vi.fn().mockResolvedValue(tutorAnswer) };
     const history = Array.from({ length: 20 }, (_, index) => ({
       role: index % 2 ? "assistant" : "user",
       content: `history-${index}`,
@@ -168,7 +257,7 @@ describe("Vertex AI API contract", () => {
   });
 
   it("rejects credentials and sanitizes a fake OTP before the provider call", async () => {
-    const provider = { generateContent: vi.fn().mockResolvedValue(JSON.stringify(tutorResult)) };
+    const provider = { generateContent: vi.fn().mockResolvedValue(tutorAnswer) };
     const credentialResponse = await request(createApp(provider))
       .post("/api/ai/tutor")
       .set(authHeader)
@@ -201,7 +290,7 @@ describe("Vertex AI API contract", () => {
     const first = request(app).post("/api/ai/tutor").set(authHeader).send(payload);
     const second = request(app).post("/api/ai/tutor").set(authHeader).send(payload);
     await new Promise((resolve) => setTimeout(resolve, 10));
-    resolveProvider(JSON.stringify(tutorResult));
+    resolveProvider(tutorAnswer);
     const [firstResponse, secondResponse] = await Promise.all([first, second]);
     expect(firstResponse.status).toBe(200);
     expect(secondResponse.status).toBe(200);

@@ -82,7 +82,7 @@ describe("AI reliability", () => {
     expect(isRetryableAiError(Object.assign(new Error("not found"), { status: 404 }))).toBe(false);
   });
 
-  it("preserves Vertex finish and safety metadata for structured Insight output", async () => {
+  it("preserves metadata and only requests JSON when a response schema is supplied", async () => {
     sdkGenerateContent.mockResolvedValueOnce({
       text: '{"summary":"ok"}',
       candidates: [{ finishReason: "MAX_TOKENS" }],
@@ -115,8 +115,29 @@ describe("AI reliability", () => {
       text: '{"summary":"ok"}',
       finishReason: "MAX_TOKENS",
       blockReason: "SAFETY",
+      candidateCount: 1,
       model: "gemini-2.5-flash-001",
     });
-    expect(sdkGenerateContent.mock.calls.at(-1)?.[0].config.maxOutputTokens).toBe(1_400);
+    expect(sdkGenerateContent.mock.calls.at(-1)?.[0].config).toMatchObject({
+      maxOutputTokens: 1_400,
+      responseMimeType: "application/json",
+      responseSchema: request.responseSchema,
+    });
+
+    sdkGenerateContent.mockResolvedValueOnce({
+      text: "Jawaban Tutor dalam teks biasa.",
+      candidates: [{ finishReason: "STOP" }],
+      modelVersion: "gemini-2.5-flash-001",
+    });
+    const plainTextResult = await provider!.generateStructuredContent!({
+      contents: "test",
+      systemInstruction: "test",
+      temperature: 0,
+    });
+    const plainTextConfig = sdkGenerateContent.mock.calls.at(-1)?.[0].config;
+
+    expect(plainTextResult.text).toBe("Jawaban Tutor dalam teks biasa.");
+    expect(plainTextConfig).not.toHaveProperty("responseMimeType");
+    expect(plainTextConfig).not.toHaveProperty("responseSchema");
   });
 });

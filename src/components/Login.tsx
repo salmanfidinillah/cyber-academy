@@ -114,7 +114,7 @@ export const Login: React.FC<LoginProps> = ({ onNavigate }) => {
         {/* Custom Input Form */}
         <form onSubmit={handleEmailLogin} className="space-y-4">
           <div className="space-y-1.5">
-            <label className="block text-xs sm:text-sm font-heading font-bold text-brand-text">
+            <label htmlFor="login-email" className="block text-xs sm:text-sm font-heading font-bold text-brand-text">
               Alamat Email
             </label>
             <div className="relative">
@@ -122,7 +122,9 @@ export const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                 <Mail className="w-4 h-4" />
               </span>
               <input
+                id="login-email"
                 type="email"
+                autoComplete="email"
                 required
                 disabled={isSubmitting || isGoogleSubmitting}
                 value={email}
@@ -135,7 +137,7 @@ export const Login: React.FC<LoginProps> = ({ onNavigate }) => {
 
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="block text-xs sm:text-sm font-heading font-bold text-brand-text">
+              <label htmlFor="login-password" className="block text-xs sm:text-sm font-heading font-bold text-brand-text">
                 Kata Sandi
               </label>
               <button
@@ -152,7 +154,9 @@ export const Login: React.FC<LoginProps> = ({ onNavigate }) => {
                 <LockIcon className="w-4 h-4" />
               </span>
               <input
+                id="login-password"
                 type="password"
+                autoComplete="current-password"
                 required
                 disabled={isSubmitting || isGoogleSubmitting}
                 value={password}
