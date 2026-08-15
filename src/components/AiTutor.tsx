@@ -309,26 +309,6 @@ export const AiTutor: React.FC<AiTutorProps> = ({
             </div>
           )}
 
-          {/* Clickable suggested questions */}
-          {parsed.suggestedQuestions && parsed.suggestedQuestions.length > 0 && (
-            <div className="pt-3 border-t border-brand-muted/15">
-              <p className="text-[10px] uppercase tracking-wider text-brand-muted font-heading font-extrabold mb-2">
-                Pertanyaan Lanjutan yang Disarankan:
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {parsed.suggestedQuestions.map((q, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => handleSendMessage(q)}
-                    disabled={loadingSend}
-                    className="text-xs bg-white hover:bg-pastel-mint border border-brand-text px-3 py-1.5 rounded-full font-sans font-bold neo-btn-transition text-left disabled:opacity-50"
-                  >
-                    💡 {q}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       );
     } catch {

@@ -9,19 +9,15 @@ import {
   AiProvider,
   AiServiceError,
   generateStructuredWithRetry,
-  generateWithRetry,
 } from "../services/aiProvider";
 import { detectHarmfulRequest, detectPromptInjection, sanitizeAiInput } from "../services/aiSafety";
-import {
-  parseLearningInsightOutput,
-  parseStructuredOutput,
-  tutorResponseSchema,
-} from "../services/aiStructuredOutput";
+import { parseLearningInsightOutput } from "../services/aiStructuredOutput";
 import { INSIGHT_SYSTEM_PROMPT, MASTER_SYSTEM_PROMPT } from "../services/aiPrompts";
 import { listMessages } from "../services/aiHistoryService";
 
 const FRIENDLY_UNAVAILABLE =
   "AI Tutor sedang sibuk atau sementara tidak tersedia. Materi, kuis, dan simulasi tetap dapat digunakan. Silakan coba kembali beberapa saat lagi.";
+const FRIENDLY_INVALID_RESPONSE = "Respons AI belum berhasil diproses. Silakan coba kembali.";
 
 type MessageLoader = typeof listMessages;
 
@@ -125,21 +121,6 @@ const insightRequestSchema = z
   })
   .strict();
 
-const tutorResponseJsonSchema = {
-  type: Type.OBJECT,
-  properties: {
-    answer: { type: Type.STRING },
-    summary: { type: Type.STRING },
-    suggestedQuestions: { type: Type.ARRAY, items: { type: Type.STRING } },
-    safetyStatus: {
-      type: Type.STRING,
-      enum: ["safe", "caution", "blocked_and_redirected", "insufficient_context"],
-    },
-    requiresOfficialHelp: { type: Type.BOOLEAN },
-  },
-  required: ["answer", "summary", "suggestedQuestions", "safetyStatus", "requiresOfficialHelp"],
-};
-
 const insightResponseJsonSchema = {
   type: Type.OBJECT,
   description: "Analisis ringkas perkembangan belajar keamanan siber berdasarkan data yang diberikan.",
@@ -206,6 +187,16 @@ const SAFETY_FINISH_REASONS = new Set([
   "SPII",
   "RECITATION",
 ]);
+
+const TUTOR_RETRYABLE_RESPONSE_CODES = new Set([
+  "AI_TUTOR_EMPTY_CANDIDATE",
+  "AI_TUTOR_EMPTY_RESPONSE",
+  "AI_TUTOR_INCOMPLETE_RESPONSE",
+  "AI_TUTOR_RESPONSE_TOO_LONG",
+  "AI_TUTOR_TRUNCATED",
+]);
+
+const NORMAL_TUTOR_FINISH_REASONS = new Set(["STOP"]);
 
 function sendError(res: Response, error: unknown): void {
   if (error instanceof z.ZodError) {
@@ -356,6 +347,169 @@ function compactHistory(
 
 function clip(value: unknown, maximum: number): string {
   return typeof value === "string" ? value.trim().slice(0, maximum) : "";
+}
+
+function tutorErrorFromGeneration(result: AiGenerationResult): AiServiceError | null {
+  const finishReason = result.finishReason?.toUpperCase();
+  const safeMetadata = {
+    responseLength: result.text.length,
+    finishReason,
+    candidateCount: result.candidateCount,
+    hasMarkdownFence: /^```(?:json)?(?:\s|$)/i.test(result.text.trim()),
+  };
+
+  if (result.blockReason || (finishReason && SAFETY_FINISH_REASONS.has(finishReason))) {
+    return new AiServiceError(
+      "Respons AI tidak dapat diberikan karena kebijakan keamanan. Silakan ubah pertanyaan dan coba kembali.",
+      "AI_TUTOR_SAFETY_REJECTED",
+      422,
+      false,
+      { safeMetadata }
+    );
+  }
+  if (result.candidateCount === 0) {
+    return new AiServiceError(
+      "Respons AI tidak memiliki candidate.",
+      "AI_TUTOR_EMPTY_CANDIDATE",
+      502,
+      true,
+      { safeMetadata }
+    );
+  }
+  if (finishReason === "MAX_TOKENS") {
+    return new AiServiceError(
+      "Respons AI terpotong.",
+      "AI_TUTOR_TRUNCATED",
+      502,
+      true,
+      { safeMetadata }
+    );
+  }
+  if (finishReason && !NORMAL_TUTOR_FINISH_REASONS.has(finishReason)) {
+    return new AiServiceError(
+      "Respons AI berhenti sebelum selesai.",
+      "AI_TUTOR_INCOMPLETE_RESPONSE",
+      502,
+      true,
+      { safeMetadata }
+    );
+  }
+  if (!result.text.trim()) {
+    return new AiServiceError(
+      "Respons AI kosong.",
+      "AI_TUTOR_EMPTY_RESPONSE",
+      502,
+      true,
+      { safeMetadata }
+    );
+  }
+  if (result.text.trim().length > 20_000) {
+    return new AiServiceError(
+      "Respons AI terlalu panjang.",
+      "AI_TUTOR_RESPONSE_TOO_LONG",
+      502,
+      true,
+      { safeMetadata }
+    );
+  }
+  return null;
+}
+
+function withTutorGenerationMetadata(error: unknown, result?: AiGenerationResult): unknown {
+  if (!(error instanceof AiServiceError) || !result) return error;
+  return new AiServiceError(error.message, error.code, error.statusCode, error.retryable, {
+    cause: error,
+    safeMetadata: {
+      ...error.safeMetadata,
+      responseLength: result.text.length,
+      finishReason: result.finishReason?.toUpperCase(),
+      candidateCount: result.candidateCount,
+      hasMarkdownFence: /^```(?:json)?(?:\s|$)/i.test(result.text.trim()),
+    },
+  });
+}
+
+function logTutorValidationAttempt(
+  attempt: number,
+  validationStatus: "failed" | "passed_after_retry",
+  error?: AiServiceError,
+  result?: AiGenerationResult
+): void {
+  const metadata = error?.safeMetadata || {
+    responseLength: result?.text.length,
+    finishReason: result?.finishReason?.toUpperCase(),
+    candidateCount: result?.candidateCount,
+    hasMarkdownFence: result ? /^```(?:json)?(?:\s|$)/i.test(result.text.trim()) : undefined,
+  };
+  const entry = JSON.stringify({
+    severity: validationStatus === "failed" ? (attempt === 1 ? "WARNING" : "ERROR") : "INFO",
+    feature: "ai_tutor",
+    attempt,
+    validationStatus,
+    failureType: error?.code,
+    finishReason: metadata.finishReason,
+    candidateCount: metadata.candidateCount,
+    responseLength: metadata.responseLength,
+    hasMarkdownFence: metadata.hasMarkdownFence,
+    validationIssueCount: metadata.validationIssueCount,
+  });
+
+  if (validationStatus === "passed_after_retry") {
+    console.info(entry);
+  } else if (attempt === 1) {
+    console.warn(entry);
+  } else {
+    console.error(entry);
+  }
+}
+
+async function generateTutorResponse(
+  provider: AiProvider,
+  request: Parameters<typeof generateStructuredWithRetry>[1],
+  config: NonNullable<AiConfigState["config"]>
+): Promise<{
+  answer: string;
+  summary: string;
+  suggestedQuestions: string[];
+  safetyStatus: "safe";
+  requiresOfficialHelp: false;
+}> {
+  let lastResponseError: AiServiceError | undefined;
+
+  for (let attempt = 1; attempt <= 2; attempt += 1) {
+    let generated: AiGenerationResult | undefined;
+    try {
+      generated = await generateStructuredWithRetry(provider, request, config, { serviceName: "AI Tutor" });
+      const generationError = tutorErrorFromGeneration(generated);
+      if (generationError) throw generationError;
+
+      if (attempt === 2) logTutorValidationAttempt(attempt, "passed_after_retry", undefined, generated);
+      return {
+        answer: generated.text.trim(),
+        summary: "",
+        suggestedQuestions: [],
+        safetyStatus: "safe",
+        requiresOfficialHelp: false,
+      };
+    } catch (error) {
+      const enrichedError = withTutorGenerationMetadata(error, generated);
+      if (
+        !(enrichedError instanceof AiServiceError) ||
+        !TUTOR_RETRYABLE_RESPONSE_CODES.has(enrichedError.code)
+      ) {
+        throw enrichedError;
+      }
+
+      lastResponseError = enrichedError;
+      logTutorValidationAttempt(attempt, "failed", enrichedError);
+      if (attempt === 1) continue;
+    }
+  }
+
+  throw new AiServiceError(FRIENDLY_INVALID_RESPONSE, "AI_INVALID_RESPONSE", 502, false, {
+    cause: lastResponseError,
+    safeMetadata: lastResponseError?.safeMetadata,
+  });
 }
 
 function insightErrorFromGeneration(result: AiGenerationResult): AiServiceError | null {
@@ -523,19 +677,21 @@ ${historyText || "(belum ada)"}
 PERTANYAAN PENGGUNA:
 ${sanitizedText}
 
-Kembalikan hanya JSON sesuai schema. Jangan menambahkan markdown fence atau teks di luar JSON.`;
+Jawab langsung sebagai teks Bahasa Indonesia yang siap ditampilkan kepada pengguna.
+Jangan gunakan objek JSON atau code fence.
+Jika pertanyaan ambigu, ajukan tepat satu pertanyaan klarifikasi.
+Jika pertanyaan tidak berbahaya tetapi di luar topik keamanan siber, arahkan secara singkat dan sopan ke topik keamanan siber.
+Jangan menambahkan pertanyaan lanjutan di akhir jawaban.`;
 
-          const raw = await generateWithRetry(
+          const parsed = await generateTutorResponse(
             dependencies.provider!,
             {
               contents: prompt,
               systemInstruction: MASTER_SYSTEM_PROMPT,
               temperature: 0.3,
-              responseSchema: tutorResponseJsonSchema,
             },
             config
           );
-          const parsed = parseStructuredOutput(raw, tutorResponseSchema);
           return warningMsg ? { ...parsed, warningMsg } : parsed;
         }
       );

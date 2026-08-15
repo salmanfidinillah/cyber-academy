@@ -5,7 +5,7 @@ export interface AiGenerateRequest {
   contents: string;
   systemInstruction: string;
   temperature: number;
-  responseSchema: Record<string, unknown>;
+  responseSchema?: Record<string, unknown>;
   maxOutputTokens?: number;
 }
 
@@ -13,6 +13,7 @@ export interface AiGenerationResult {
   text: string;
   finishReason?: string;
   blockReason?: string;
+  candidateCount?: number;
   model: string;
 }
 
@@ -24,6 +25,7 @@ export interface AiProvider {
 export interface AiSafeErrorMetadata {
   responseLength?: number;
   finishReason?: string;
+  candidateCount?: number;
   hasMarkdownFence?: boolean;
   validationIssueCount?: number;
 }
@@ -210,14 +212,19 @@ export function createAiProvider(configState: AiConfigState): AiProvider | null 
           systemInstruction: request.systemInstruction,
           temperature: request.temperature,
           maxOutputTokens: request.maxOutputTokens ?? config.maxOutputTokens,
-          responseMimeType: "application/json",
-          responseSchema: request.responseSchema,
+          ...(request.responseSchema
+            ? {
+                responseMimeType: "application/json",
+                responseSchema: request.responseSchema,
+              }
+            : {}),
         },
       });
       return {
         text: response.text || "",
         finishReason: response.candidates?.[0]?.finishReason,
         blockReason: response.promptFeedback?.blockReason,
+        candidateCount: response.candidates?.length ?? 0,
         model: response.modelVersion || config.model,
       };
   };

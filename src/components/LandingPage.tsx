@@ -372,7 +372,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
                     </div>
                     <div className="flex flex-col gap-4 rounded-xl border-2 border-dashed border-brand-border bg-white/70 p-4 sm:flex-row sm:items-center sm:justify-between">
                       <div className="flex items-center gap-3"><span className="flex size-10 shrink-0 items-center justify-center rounded-full border-2 border-brand-border bg-white"><Award className="size-5" aria-hidden="true" /></span><div><p className="text-xs font-bold">Hadiah Lencana Kelulusan:</p><p className="font-heading text-sm font-bold text-purple-800">{path.badgeName}</p></div></div>
-                      <NeoButton variant={path.level === "Beginner" ? "primary" : "secondary"} size="md" onClick={() => onNavigate(path.level === "Beginner" ? "/learn/paths" : "/dashboard")} className={`w-full sm:w-auto ${path.level !== "Beginner" ? "cursor-not-allowed" : ""}`}>{path.level === "Beginner" ? "Mulai Belajar Sekarang" : "Buka Setelah Jalur Beginner"}</NeoButton>
+                      <NeoButton variant={path.level === "Beginner" ? "primary" : "secondary"} size="md" onClick={() => onNavigate(path.level === "Beginner" ? "/learn/paths" : "/dashboard")} className={`w-full sm:w-auto ${path.level !== "Beginner" ? "cursor-not-allowed" : ""}`}>{path.level === "Beginner" ? "Mulai Belajar Sekarang" : path.level === "Intermediate" ? "Buka Setelah Jalur Beginner" : "Buka Setelah Jalur Intermediate"}</NeoButton>
                     </div>
                   </NeoCard>
                 </Reveal>
