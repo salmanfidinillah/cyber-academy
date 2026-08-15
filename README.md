@@ -2,7 +2,7 @@
 
 Cyber Academy AI adalah platform belajar keamanan siber berbasis web. Project ini menggabungkan materi bertahap, kuis, simulasi aman, pendamping belajar berbasis AI, dan pencatatan progress agar topik cybersecurity lebih mudah dipelajari dari dasar sampai lanjutan.
 
-Project ini dikembangkan untuk FTI Festival 2026 kategori Web Development.
+Project ini dikembangkan untuk Lomba FTI Festival 2026 kategori Web Development.
 
 ## Demo
 
@@ -232,7 +232,7 @@ Tidak ada aplikasi yang dapat dianggap 100% aman. Konfigurasi production, IAM, A
 
 - Aplikasi memerlukan koneksi ke layanan Firebase dan provider AI yang telah dikonfigurasi.
 - Quota AI saat ini disimpan di memory proses sehingga tidak dibagi antar-instance dan akan kembali awal saat instance restart.
-- Konfigurasi Firebase Hosting, pemetaan custom domain, revision, dan traffic Cloud Run tidak tersimpan pada ZIP project ini.
+- Konfigurasi Firebase Hosting, pemetaan custom domain, revision, dan traffic Cloud Run tidak tersimpan pada  project ini.
 - Isi katalog source sudah memiliki test integritas, tetapi kondisi resource production tetap perlu diverifikasi terpisah sebelum rilis.
 
 ## Dokumentasi Lomba
