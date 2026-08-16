@@ -165,6 +165,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({
   const coursePercent = totalCourses > 0 ? Math.round((completedCoursesCount / totalCourses) * 100) : 0;
 
   const currentLvl = currentUser.currentLevel || 1;
+  const isMaxLevel = currentLvl >= 5;
   const levelProgressPercent = getLevelProgressPercent(currentUser.totalXp || 0);
   const xpNeeded = getXpNeededForNextLevel(currentUser.totalXp || 0);
 
@@ -230,7 +231,7 @@ export const ProgressPage: React.FC<ProgressPageProps> = ({
           <div className="space-y-2 border-t border-brand-border/20 pt-4">
             <div className="flex justify-between text-xs font-bold">
               <span>{currentUser.totalXp} XP Terkumpul</span>
-              <span>Sisa {xpNeeded} XP ke Lvl {currentLvl + 1}</span>
+              <span>{isMaxLevel ? "Level maksimal tercapai" : `Sisa ${xpNeeded} XP ke Lvl ${currentLvl + 1}`}</span>
             </div>
             <div className="w-full bg-white h-4 border-2 border-brand-border rounded-full overflow-hidden p-0.5">
               <div

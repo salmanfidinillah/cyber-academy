@@ -131,7 +131,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             <motion.div variants={heroItem} transition={{ duration: 0.42 }}>
               <span className="landing-kicker inline-flex max-w-full items-center gap-2 rounded-full border-2 border-brand-border bg-pastel-yellow px-3 py-1.5 font-heading text-[11px] font-bold uppercase tracking-[0.08em] shadow-[3px_3px_0_#111111] sm:text-xs">
                 <Sparkles className="size-4 shrink-0" aria-hidden="true" />
-                Platform Edukasi Cybersecurity Modern #1
+                Platform Edukasi Cybersecurity Interaktif
               </span>
             </motion.div>
 
@@ -391,9 +391,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             <div className="text-center lg:text-left">
               <span className="landing-eyebrow bg-pastel-lavender"><Award className="size-4" aria-hidden="true" />Sistem Gamifikasi</span>
               <h2 id="gamification-title" className="mt-5 text-3xl font-bold leading-tight sm:text-4xl">Kumpulkan Skor XP, Naikkan Level, dan Raih Lencana Keren</h2>
-              <p className="mt-4 text-sm font-semibold leading-relaxed text-brand-muted sm:text-base">Belajar tidak harus membosankan. Di Cyber Academy AI, setiap aktivitas belajar berharga. Menyelesaikan materi, lulus kuis, atau menyelesaikan tantangan harian akan memberikan poin XP yang menaikkan level akunmu serta membuka badge eksklusif.</p>
+              <p className="mt-4 text-sm font-semibold leading-relaxed text-brand-muted sm:text-base">Belajar tidak harus membosankan. Di Cyber Academy AI, setiap aktivitas belajar berharga. Menyelesaikan materi, lulus kuis, atau menuntaskan simulasi akan memberikan poin XP, meningkatkan level akun, serta membuka badge milestone.</p>
               <ul className="mx-auto mt-6 max-w-md space-y-3 text-left text-sm font-semibold lg:mx-0">
-                {["Naik Level 1 hingga Level 5 secara konsisten", "Buka lencana keren seperti “Phishing Hunter” & “Password Guardian”", "Bandingkan peringkatmu di Leaderboard mingguan yang sehat"].map((item) => <li key={item} className="flex items-start gap-3"><CheckCircle className="mt-0.5 size-5 shrink-0 text-emerald-700" aria-hidden="true" />{item}</li>)}
+                {["Naik Level 1 hingga Level 5 secara konsisten", "Raih 4 badge milestone dari learning path dan simulasi", "Pantau XP, level, streak, progress, badge, dan sertifikat"].map((item) => <li key={item} className="flex items-start gap-3"><CheckCircle className="mt-0.5 size-5 shrink-0 text-emerald-700" aria-hidden="true" />{item}</li>)}
               </ul>
               <NeoButton variant="lavender" onClick={() => onNavigate("/badges")} className="mt-7 w-full sm:w-auto">Lihat Lencana &amp; Progres Profil</NeoButton>
             </div>
@@ -420,7 +420,7 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onNavigate }) => {
             <div className="absolute -bottom-12 -left-10 -z-10 size-36 rounded-full border-[3px] border-brand-border bg-pastel-yellow" aria-hidden="true" />
             <span className="landing-eyebrow bg-white"><Sparkles className="size-4" aria-hidden="true" />Mulai petualanganmu</span>
             <h2 id="final-cta-title" className="mx-auto mt-5 max-w-3xl text-3xl font-bold leading-tight sm:text-4xl lg:text-5xl">Siap Lindungi Identitas dan Data Pribadimu?</h2>
-            <p className="mx-auto mt-4 max-w-2xl text-sm font-bold leading-relaxed sm:text-base">Bergabunglah sekarang bersama ribuan pelajar, mahasiswa, dan masyarakat umum lainnya yang telah meningkatkan kewaspadaan digital di Cyber Academy AI. Gratis selamanya!</p>
+            <p className="mx-auto mt-4 max-w-2xl text-sm font-bold leading-relaxed sm:text-base">Mulai perjalanan belajarmu bersama Cyber Academy AI dan tingkatkan kewaspadaan digital melalui materi, kuis, simulasi, serta pendamping belajar berbasis AI.</p>
             <div className="mt-7 flex flex-col items-stretch justify-center gap-4 sm:flex-row sm:items-center"><NeoButton variant="secondary" size="lg" onClick={() => onNavigate("/register")} className="w-full sm:w-auto">Mulai Belajar dengan Google</NeoButton><button type="button" onClick={() => window.scrollTo({ top: 0, behavior: shouldReduceMotion ? "auto" : "smooth" })} className="landing-secondary-cta min-h-12 rounded-xl px-4 font-heading text-sm font-bold sm:text-base">Kembali ke Atas ↑</button></div>
           </div>
         </Reveal>

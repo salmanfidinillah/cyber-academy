@@ -293,6 +293,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser: propUser, onN
     : [];
 
   const levelProgressXp = currentUser.totalXp % 100;
+  const isMaxLevel = currentUser.currentLevel >= 5;
   const pathProgressSummaries = catalogPaths.map((path) => ({
     id: path.id,
     title: path.title,
@@ -418,7 +419,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ currentUser: propUser, onN
             icon={<TrendingUp className="size-4" />}
             label="Level"
             value={`Lvl ${currentUser.currentLevel}`}
-            helper={`${levelProgressXp}% ke level berikutnya`}
+            helper={isMaxLevel ? "Level maksimal tercapai" : `${levelProgressXp}% ke level berikutnya`}
           />
           <DashboardStatCard
             accentClass="bg-pastel-yellow/60"

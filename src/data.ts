@@ -534,7 +534,7 @@ export const faqs: FaqItem[] = [
   },
   {
     question: "Bagaimana AI Tutor membantu saya belajar?",
-    answer: "AI Tutor berbasis Google Gemini terintegrasi langsung dengan modul materi. Kamu bisa langsung bertanya perihal materi pelajaran yang sedang dibaca dan mendapatkan jawaban instan yang ramah pemula."
+    answer: "AI Tutor berbasis Vertex AI terintegrasi dengan modul pembelajaran. Pengguna dapat bertanya mengenai materi yang sedang dipelajari dan memperoleh penjelasan keamanan siber yang defensif serta ramah pemula."
   },
   {
     question: "Apa itu Simulasi Phishing interaktif?",

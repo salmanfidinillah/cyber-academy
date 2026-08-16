@@ -170,8 +170,8 @@ export const GamificationPreviewIllustration: React.FC = () => {
         <div className="flex items-center space-x-2 mt-2 bg-white p-2 rounded-xl border-2 border-brand-border">
           <div className="w-9 h-9 rounded-full bg-pastel-peach neo-border flex items-center justify-center font-bold text-base">🕵️</div>
           <div>
-            <div className="text-[11px] font-heading font-bold leading-tight">Phishing Hunter</div>
-            <div className="text-[9px] text-brand-muted">Mendeteksi 5 Email Palsu</div>
+            <div className="text-[11px] font-heading font-bold leading-tight">Beginner Master</div>
+            <div className="text-[9px] text-brand-muted">Menyelesaikan jalur Beginner</div>
           </div>
         </div>
         <p className="text-[10px] text-brand-muted mt-2">Dapatkan badge keren lainnya dari setiap kuis!</p>
