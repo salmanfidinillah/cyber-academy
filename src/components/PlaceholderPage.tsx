@@ -36,14 +36,14 @@ export const PlaceholderPage: React.FC<PlaceholderProps> = ({ pageName, onNaviga
                 Untuk keperluan progres belajar, kuis, dan simulasi, kami menyimpan nama tampilan, email, data skor XP, pencapaian badge, serta riwayat interaksi AI Tutor Anda di dalam sistem database cloud Firebase kami yang aman.
               </p>
 
-              <h2 className="text-xl font-heading font-bold mt-4">2. Integrasi Kecerdasan Buatan (Google Gemini)</h2>
+              <h2 className="text-xl font-heading font-bold mt-4">2. Integrasi Kecerdasan Buatan (Vertex AI)</h2>
               <p>
-                Setiap chat yang Anda kirimkan ke AI Tutor diteruskan melalui API serverless kami ke Google Gemini secara aman. Kami memastikan tidak ada data pribadi sensitif (seperti password) yang dikirimkan ke model AI.
+                Setiap pertanyaan yang dikirimkan melalui AI Tutor diproses oleh backend Express sebelum diteruskan ke Vertex AI. Backend menerapkan validasi, pembatasan input, dan penyaringan data sensitif sebelum permintaan diproses oleh layanan AI.
               </p>
 
-              <h2 className="text-xl font-heading font-bold mt-4">3. Penghapusan Akun</h2>
+              <h2 className="text-xl font-heading font-bold mt-4">3. Pengelolaan Data Belajar</h2>
               <p>
-                Kami memegang teguh prinsip kedaulatan data Anda. Pengguna dapat dengan mudah mengajukan permohonan penghapusan akun beserta seluruh data riwayat progres belajar di menu pengaturan profil kapan saja.
+                Pengguna dapat mengelola dan mereset progress belajar melalui menu Pengaturan dengan proses konfirmasi yang tersedia. Fitur tersebut tidak mengubah atau menghapus akun Firebase Authentication pengguna.
               </p>
             </div>
           </NeoCard>
