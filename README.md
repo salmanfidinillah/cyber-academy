@@ -24,7 +24,10 @@ pengguna tamat
 | Email | `support@siberaga.web.id` |
 | Password | `Demojuri321` |
 
+
 Akun ini disediakan untuk mencoba alur pengguna biasa. Akun tersebut tidak dinyatakan sebagai akun admin.
+
+Perlu diketahui bahwa pendaftaran pengguna baru memerlukan verifikasi email. Jika email verifikasi belum muncul di kotak masuk, silakan periksa folder Spam
 
 ## Tampilan Aplikasi
 
