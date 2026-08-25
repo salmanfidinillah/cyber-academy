@@ -108,7 +108,7 @@ html, body {
   background-color: #F7F4EE;
   color: #111111;
   font-family: "Nunito Sans", sans-serif;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 #root {

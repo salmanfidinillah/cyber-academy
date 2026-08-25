@@ -52,7 +52,7 @@ export function PublicVerifyCertificate({ initialCode = "", onNavigate }: Public
       {/* Brand logo to look extremely official as a public page */}
       <div className="text-center mb-8">
         <h1 className="text-2xl font-black tracking-tight text-black flex items-center justify-center gap-2">
-          <ShieldCheck className="w-8 h-8 text-pastel-mint" />
+          <img src="/logo.png" alt="" className="h-8 w-8 rounded-lg object-cover" />
           <span>CYBER ACADEMY AI</span>
         </h1>
         <p className="text-gray-500 font-mono text-xs uppercase tracking-wider mt-1">
