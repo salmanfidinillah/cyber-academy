@@ -1,5 +1,4 @@
 import React from "react";
-import { Shield } from "lucide-react";
 
 interface FooterProps {
   onNavigate: (route: string) => void;
@@ -45,8 +44,8 @@ export const Footer: React.FC<FooterProps> = ({ onNavigate, isLandingPage = fals
             className="inline-flex max-w-full items-center gap-2.5 rounded-xl border-2 border-brand-border bg-pastel-mint px-4 py-2.5 shadow-[4px_4px_0_#111111] transition-transform hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-pastel-yellow focus-visible:ring-offset-2"
             aria-label="Cyber Academy — kembali ke beranda"
           >
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 border-brand-border bg-white">
-              <Shield className="h-4 w-4" aria-hidden="true" />
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-brand-border bg-white">
+              <img src="/logo.png" alt="" className="h-full w-full object-cover" />
             </span>
             <span className="min-w-0 break-words font-heading text-base font-bold tracking-tight sm:text-lg">
               Cyber Academy

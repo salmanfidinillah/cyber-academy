@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Menu, X, Shield, LogIn, LogOut } from "lucide-react";
+import { Menu, X, LogIn, LogOut } from "lucide-react";
 import { NeoButton } from "./NeoButton";
 import { User } from "../types";
 
@@ -53,8 +53,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           onClick={() => handleNavClick("home")}
           className={`flex min-w-0 items-center gap-2.5 cursor-pointer select-none bg-pastel-mint px-3 py-1.5 rounded-xl neo-border neo-shadow-sm hover:translate-y-[-2px] hover:neo-shadow-md transition-all duration-150 sm:px-3.5 ${isLandingPage ? "landing-navbar-brand" : ""}`}
         >
-          <div className="w-7 h-7 bg-white rounded-full border-2 border-brand-border flex items-center justify-center">
-            <Shield className="w-4 h-4 text-brand-text fill-pastel-mint" />
+          <div className="w-7 h-7 bg-white rounded-full border-2 border-brand-border flex items-center justify-center overflow-hidden">
+            <img src="/logo.png" alt="" className="h-full w-full object-cover" />
           </div>
           <span className="min-w-0 truncate font-heading text-sm font-bold tracking-tight min-[360px]:text-base sm:text-lg">
             Cyber Academy <span className="ml-1 rounded bg-[#111111] px-1.5 py-0.2 text-xs text-pastel-mint">AI</span>

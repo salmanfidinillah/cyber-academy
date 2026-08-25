@@ -4,7 +4,6 @@ import {
   LayoutDashboard,
   BookOpen,
   ShieldAlert,
-  ShieldCheck,
   Bot,
   ChartNoAxesColumnIncreasing,
   Award,
@@ -113,10 +112,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           )}
         >
           <span className={cn(
-            "flex shrink-0 items-center justify-center rounded-xl border-[3px] border-black bg-pastel-mint shadow-[3px_3px_0_0_#111111] transition-transform group-hover:-translate-y-0.5 motion-reduce:transform-none",
+            "flex shrink-0 items-center justify-center overflow-hidden rounded-xl border-[3px] border-black bg-pastel-mint shadow-[3px_3px_0_0_#111111] transition-transform group-hover:-translate-y-0.5 motion-reduce:transform-none",
             isCompact ? "size-11" : "size-10",
           )}>
-            <ShieldCheck className="size-5" aria-hidden="true" />
+            <img src="/logo.png" alt="" className="h-full w-full object-cover" />
           </span>
           {!isCompact && (
             <span className="min-w-0 leading-tight">
